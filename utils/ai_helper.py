@@ -11,14 +11,12 @@ client = None
 
 if api_key:
     try:
+        # For groq version 0.3.0 and newer
         client = groq.Groq(api_key=api_key)
-    except TypeError as e:
-        # Handle the 'proxies' parameter error that occurs on Streamlit deployment
-        if "unexpected keyword argument 'proxies'" in str(e):
-            print("Warning: Groq client initialization failed due to proxies parameter")
-            # Fallback to None client, will use fallback suggestions
-        else:
-            raise
+    except (TypeError, AttributeError) as e:
+        # Handle initialization errors that may occur on different versions
+        print(f"Warning: Groq client initialization failed: {str(e)}")
+        # Fallback to None client, will use fallback suggestions
 else:
     print("Warning: GROQ_API_KEY not found in environment variables")
 
@@ -63,7 +61,7 @@ def get_ai_suggestions(user_input, category):
                     "content": prompt
                 }
             ],
-            model="deepseek-r1-distill-llama-70b",
+            model="llama3-8b-8192",  # Updated to a model available in the current version
             max_tokens=200
         )
         
@@ -119,7 +117,7 @@ def generate_workplace_tips(responses):
                     "content": f"Based on the following ikigai responses, provide 5-7 actionable workplace growth tips:\n\n{all_responses}"
                 }
             ],
-            model="deepseek-r1-distill-llama-70b",
+            model="llama3-8b-8192",  # Updated to a model available in the current version
             max_tokens=500
         )
         
