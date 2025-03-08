@@ -1,0 +1,13 @@
+[theme]
+primaryColor = "#7BA17D"  # Bamboo Green
+backgroundColor = "#F9F5F0"  # Soft White
+secondaryBackgroundColor = "#F6CECE"  # Sakura Pink
+textColor = "#2A2A2A"  # Sumi Ink Black
+font = "sans serif"
+
+[server]
+enableCORS = false
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
