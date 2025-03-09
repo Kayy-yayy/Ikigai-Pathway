@@ -241,7 +241,7 @@ with col2:
     
     with col_back:
         if st.button("← Back to What the World Needs", key="back_to_world_needs"):
-            switch_page("world_needs")
+            switch_page("world needs")
     
     with col_next:
         if st.button("Generate Your Ikigai Chart →", key="continue_to_chart"):
@@ -250,7 +250,7 @@ with col2:
             if valid_inputs:
                 st.session_state.responses['paid_for'] = valid_inputs
                 st.session_state.progress['paid_for_complete'] = True
-                switch_page("ikigai_chart")
+                switch_page("ikigai chart")
             else:
                 st.error("Please enter at least one item before continuing.")
 

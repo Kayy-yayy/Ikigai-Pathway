@@ -286,6 +286,6 @@ with col2:
         st.session_state.progress['love_complete'] = True
         
         # Navigate to next page
-        switch_page("2_good_at")
+        switch_page("good at")
 
 st.markdown('</div>', unsafe_allow_html=True)

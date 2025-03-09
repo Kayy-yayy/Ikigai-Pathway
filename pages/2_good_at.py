@@ -250,7 +250,7 @@ with col2:
             if valid_inputs:
                 st.session_state.responses['good_at'] = valid_inputs
                 st.session_state.progress['good_at_complete'] = True
-                switch_page("world_needs")
+                switch_page("world needs")
             else:
                 st.error("Please enter at least one item before continuing.")
 

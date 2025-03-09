@@ -241,7 +241,7 @@ with col2:
     
     with col_back:
         if st.button("← Back to What You're Good At", key="back_to_good_at"):
-            switch_page("good_at")
+            switch_page("good at")
     
     with col_next:
         if st.button("Continue to What You Can Be Paid For →", key="continue_to_paid_for"):
@@ -250,7 +250,7 @@ with col2:
             if valid_inputs:
                 st.session_state.responses['world_needs'] = valid_inputs
                 st.session_state.progress['world_needs_complete'] = True
-                switch_page("paid_for")
+                switch_page("paid for")
             else:
                 st.error("Please enter at least one item before continuing.")
 
