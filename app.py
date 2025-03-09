@@ -20,7 +20,7 @@ st.set_page_config(
     page_title="Ikigai Pathway",
     page_icon="🏮",
     layout="wide",
-    initial_sidebar_state="hidden"
+    initial_sidebar_state="collapsed"
 )
 
 # Hide the sidebar and default Streamlit elements
@@ -34,6 +34,8 @@ header {visibility: hidden;}
 .css-17ziqus {visibility: hidden;}
 .css-1dp5vir {visibility: hidden;}
 div[data-testid="stSidebarNav"] {display: none;}
+div[data-testid="collapsedControl"] {display: none;}
+section[data-testid="stSidebar"] {display: none;}
 </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
@@ -198,45 +200,59 @@ def display_progress():
     # Create a container with proper styling
     st.markdown('<div class="progress-container" style="margin: 20px auto; display: flex; justify-content: center; align-items: center; width: 80%; max-width: 800px;">', unsafe_allow_html=True)
     
-    # Landing lantern
-    lantern_class = "lantern lit" if st.session_state.progress['landing_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["landing_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["landing_complete"] else "none"};">1</div>', unsafe_allow_html=True)
-    
-    # Path to Love
-    st.markdown('<div class="torii-path" style="height: 3px; background-color: #3F4B83; flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
-    
     # Love lantern
     lantern_class = "lantern lit" if st.session_state.progress['love_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["love_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["love_complete"] else "none"};">2</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["love_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["love_complete"] else "none"};">1</div>', unsafe_allow_html=True)
     
     # Path to Good At
     st.markdown('<div class="torii-path" style="height: 3px; background-color: #3F4B83; flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
     
     # Good At lantern
     lantern_class = "lantern lit" if st.session_state.progress['good_at_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["good_at_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["good_at_complete"] else "none"};">3</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["good_at_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["good_at_complete"] else "none"};">2</div>', unsafe_allow_html=True)
     
     # Path to World Needs
     st.markdown('<div class="torii-path" style="height: 3px; background-color: #3F4B83; flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
     
     # World Needs lantern
     lantern_class = "lantern lit" if st.session_state.progress['world_needs_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["world_needs_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["world_needs_complete"] else "none"};">4</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["world_needs_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["world_needs_complete"] else "none"};">3</div>', unsafe_allow_html=True)
     
     # Path to Paid For
     st.markdown('<div class="torii-path" style="height: 3px; background-color: #3F4B83; flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
     
     # Paid For lantern
     lantern_class = "lantern lit" if st.session_state.progress['paid_for_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["paid_for_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["paid_for_complete"] else "none"};">5</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["paid_for_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["paid_for_complete"] else "none"};">4</div>', unsafe_allow_html=True)
     
-    # Path to Chart
-    st.markdown('<div class="torii-path" style="height: 3px; background-color: #3F4B83; flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
+    # Close the container
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    # Chart lantern
-    lantern_class = "lantern lit" if st.session_state.progress['chart_generated'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["chart_generated"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["chart_generated"] else "none"};">6</div>', unsafe_allow_html=True)
+    # Add labels under the lanterns
+    st.markdown('<div class="progress-labels" style="margin: 5px auto; display: flex; justify-content: center; align-items: center; width: 80%; max-width: 800px;">', unsafe_allow_html=True)
     
+    # Love label
+    st.markdown('<div style="width: 40px; text-align: center; font-size: 10px;">Love</div>', unsafe_allow_html=True)
+    
+    # Spacer for Good At
+    st.markdown('<div style="flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
+    
+    # Good At label
+    st.markdown('<div style="width: 40px; text-align: center; font-size: 10px;">Good At</div>', unsafe_allow_html=True)
+    
+    # Spacer for World Needs
+    st.markdown('<div style="flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
+    
+    # World Needs label
+    st.markdown('<div style="width: 40px; text-align: center; font-size: 10px;">World Needs</div>', unsafe_allow_html=True)
+    
+    # Spacer for Paid For
+    st.markdown('<div style="flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
+    
+    # Paid For label
+    st.markdown('<div style="width: 40px; text-align: center; font-size: 10px;">Paid For</div>', unsafe_allow_html=True)
+    
+    # Close the labels container
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Load CSS

@@ -12,6 +12,5 @@ enableXsrfProtection = true
 [browser]
 gatherUsageStats = false
 
-[ui]
-hideTopBar = true
-hideSidebarNav = true
+[client]
+showSidebarNavigation = false
