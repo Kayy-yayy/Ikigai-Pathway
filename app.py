@@ -1,16 +1,10 @@
 import streamlit as st
 import os
-from dotenv import load_dotenv
 import json
-import base64
-from PIL import Image
-import io
-import matplotlib.pyplot as plt
-import numpy as np
-from streamlit_extras.switch_page_button import switch_page
-from streamlit_lottie import st_lottie
 import requests
-from utils.media_helper import set_background_image, add_background_overlay, play_audio, get_audio_base64
+from dotenv import load_dotenv
+from streamlit_lottie import st_lottie
+import time
 
 # Load environment variables
 load_dotenv()
@@ -30,9 +24,6 @@ hide_streamlit_style = """
 footer {visibility: hidden;}
 header {visibility: hidden;}
 .stDeployButton {display:none;}
-.css-1rs6os {visibility: hidden;}
-.css-17ziqus {visibility: hidden;}
-.css-1dp5vir {visibility: hidden;}
 div[data-testid="stSidebarNav"] {display: none;}
 div[data-testid="collapsedControl"] {display: none;}
 section[data-testid="stSidebar"] {display: none;}
@@ -40,17 +31,200 @@ section[data-testid="stSidebar"] {display: none;}
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# Set background image if available
-bg_image_path = os.path.join("assets", "images", "zen_garden_bg.png")
-if os.path.exists(bg_image_path):
-    set_background_image(bg_image_path)
-    # Add a semi-transparent overlay for better text readability
-    add_background_overlay(opacity=0.8)
+# Custom CSS for the app
+custom_css = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+
+:root {
+    --primary-color: #E94560;
+    --secondary-color: #0F3460;
+    --background-color: #F9F7F7;
+    --text-color: #1A1A2E;
+    --accent-color: #16213E;
+    --light-accent: #E8F0F2;
+}
+
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.header p {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
+.card p {
+    font-size: 1rem;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+}
+
+.button-primary {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: 30px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.button-primary:hover {
+    background-color: #d13652;
+}
+
+.button-secondary {
+    display: inline-block;
+    background-color: var(--light-accent);
+    color: var(--secondary-color);
+    padding: 0.6rem 1.5rem;
+    border-radius: 30px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.button-secondary:hover {
+    background-color: #d9e6ea;
+}
+
+.progress-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem 0;
+    padding: 1rem;
+    background-color: var(--light-accent);
+    border-radius: 8px;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.progress-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: var(--secondary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.5rem;
+    position: relative;
+    border: 2px solid var(--secondary-color);
+}
+
+.progress-circle.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.progress-label {
+    font-size: 0.8rem;
+    text-align: center;
+    color: var(--secondary-color);
+    max-width: 80px;
+}
+
+.progress-line {
+    height: 2px;
+    background-color: var(--secondary-color);
+    flex-grow: 1;
+    margin: 0 10px;
+    position: relative;
+    top: -25px;
+    z-index: 0;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+}
+
+.two-column {
+    display: flex;
+    gap: 2rem;
+}
+
+.column {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .two-column {
+        flex-direction: column;
+    }
+}
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
 
 # Initialize session state
 if 'progress' not in st.session_state:
     st.session_state.progress = {
-        'landing_complete': False,
         'love_complete': False,
         'good_at_complete': False,
         'world_needs_complete': False,
@@ -58,283 +232,147 @@ if 'progress' not in st.session_state:
         'chart_generated': False
     }
 
-if 'responses' not in st.session_state:
-    st.session_state.responses = {
-        'love': [],
-        'good_at': [],
-        'world_needs': [],
-        'paid_for': []
-    }
-
-# Custom CSS
-def load_css():
-    css = """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Sawarabi+Mincho&display=swap');
-        
-        html, body, [class*="css"] {
-            font-family: 'Sawarabi Mincho', serif;
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Noto Serif JP', serif;
-        }
-        
-        .sakura-pink {
-            color: #F6CECE;
-        }
-        
-        .bamboo-green {
-            color: #7BA17D;
-        }
-        
-        .indigo-blue {
-            color: #3F4B83;
-        }
-        
-        .sumi-black {
-            color: #2A2A2A;
-        }
-        
-        .gold-accent {
-            color: #D4AF37;
-        }
-        
-        .soft-bg {
-            background-color: #F9F5F0;
-        }
-        
-        .main-header {
-            text-align: center;
-            font-size: 3rem;
-            color: #2A2A2A;
-            margin-bottom: 2rem;
-        }
-        
-        .haiku {
-            font-style: italic;
-            text-align: center;
-            margin: 2rem 0;
-            font-size: 1.2rem;
-        }
-        
-        .centered-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        
-        .ema-button {
-            background-color: #7BA17D;
-            color: white;
-            border-radius: 10px;
-            padding: 0.75rem 2rem;
-            font-size: 1.2rem;
-            border: none;
-            cursor: pointer;
-            margin-top: 2rem;
-            transition: all 0.3s ease;
-        }
-        
-        .ema-button:hover {
-            background-color: #3F4B83;
-            transform: scale(1.05);
-        }
-        
-        .progress-container {
-            margin: 2rem 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 80%;
-        }
-        
-        .lantern {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #D4AF37;
-            opacity: 0.3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .lantern.lit {
-            opacity: 1;
-            box-shadow: 0 0 15px #D4AF37;
-        }
-        
-        .torii-path {
-            height: 5px;
-            background-color: #3F4B83;
-            flex-grow: 1;
-            margin: 0 10px;
-        }
-        
-        /* Content container with semi-transparent background */
-        .content-container {
-            background-color: rgba(249, 245, 240, 0.85);
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin: 1rem 0;
-        }
-    </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
-
-# Load animation
+# Helper functions
 def load_lottie_url(url):
     r = requests.get(url)
     if r.status_code != 200:
         return None
     return r.json()
 
+# Load animations
+lottie_journey = load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_v4isjbj5.json")
+lottie_ikigai = load_lottie_url("https://assets5.lottiefiles.com/private_files/lf30_WdTEui.json")
+
 # Progress visualization
 def display_progress():
-    # Create a container with proper styling
-    st.markdown('<div class="progress-container" style="margin: 20px auto; display: flex; justify-content: center; align-items: center; width: 80%; max-width: 800px;">', unsafe_allow_html=True)
+    st.markdown('<div class="progress-container">', unsafe_allow_html=True)
     
-    # Love lantern
-    lantern_class = "lantern lit" if st.session_state.progress['love_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["love_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["love_complete"] else "none"};">1</div>', unsafe_allow_html=True)
+    # Love step
+    st.markdown(
+        f"""
+        <div class="progress-step">
+            <div class="progress-circle{'active' if st.session_state.progress['love_complete'] else ''}">1</div>
+            <div class="progress-label">What You Love</div>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
     
-    # Path to Good At
-    st.markdown('<div class="torii-path" style="height: 3px; background-color: #3F4B83; flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
+    # Line to Good At
+    st.markdown('<div class="progress-line"></div>', unsafe_allow_html=True)
     
-    # Good At lantern
-    lantern_class = "lantern lit" if st.session_state.progress['good_at_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["good_at_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["good_at_complete"] else "none"};">2</div>', unsafe_allow_html=True)
+    # Good At step
+    st.markdown(
+        f"""
+        <div class="progress-step">
+            <div class="progress-circle{'active' if st.session_state.progress['good_at_complete'] else ''}">2</div>
+            <div class="progress-label">What You're Good At</div>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
     
-    # Path to World Needs
-    st.markdown('<div class="torii-path" style="height: 3px; background-color: #3F4B83; flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
+    # Line to World Needs
+    st.markdown('<div class="progress-line"></div>', unsafe_allow_html=True)
     
-    # World Needs lantern
-    lantern_class = "lantern lit" if st.session_state.progress['world_needs_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["world_needs_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["world_needs_complete"] else "none"};">3</div>', unsafe_allow_html=True)
+    # World Needs step
+    st.markdown(
+        f"""
+        <div class="progress-step">
+            <div class="progress-circle{'active' if st.session_state.progress['world_needs_complete'] else ''}">3</div>
+            <div class="progress-label">What the World Needs</div>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
     
-    # Path to Paid For
-    st.markdown('<div class="torii-path" style="height: 3px; background-color: #3F4B83; flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
+    # Line to Paid For
+    st.markdown('<div class="progress-line"></div>', unsafe_allow_html=True)
     
-    # Paid For lantern
-    lantern_class = "lantern lit" if st.session_state.progress['paid_for_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}" style="width: 40px; height: 40px; border-radius: 50%; background-color: #D4AF37; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; opacity: {1 if st.session_state.progress["paid_for_complete"] else 0.3}; box-shadow: {" 0 0 15px #D4AF37" if st.session_state.progress["paid_for_complete"] else "none"};">4</div>', unsafe_allow_html=True)
+    # Paid For step
+    st.markdown(
+        f"""
+        <div class="progress-step">
+            <div class="progress-circle{'active' if st.session_state.progress['paid_for_complete'] else ''}">4</div>
+            <div class="progress-label">What You Can Be Paid For</div>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
     
-    # Close the container
     st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Add labels under the lanterns
-    st.markdown('<div class="progress-labels" style="margin: 5px auto; display: flex; justify-content: center; align-items: center; width: 80%; max-width: 800px;">', unsafe_allow_html=True)
-    
-    # Love label
-    st.markdown('<div style="width: 40px; text-align: center; font-size: 10px;">Love</div>', unsafe_allow_html=True)
-    
-    # Spacer for Good At
-    st.markdown('<div style="flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
-    
-    # Good At label
-    st.markdown('<div style="width: 40px; text-align: center; font-size: 10px;">Good At</div>', unsafe_allow_html=True)
-    
-    # Spacer for World Needs
-    st.markdown('<div style="flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
-    
-    # World Needs label
-    st.markdown('<div style="width: 40px; text-align: center; font-size: 10px;">World Needs</div>', unsafe_allow_html=True)
-    
-    # Spacer for Paid For
-    st.markdown('<div style="flex-grow: 1; margin: 0 10px;"></div>', unsafe_allow_html=True)
-    
-    # Paid For label
-    st.markdown('<div style="width: 40px; text-align: center; font-size: 10px;">Paid For</div>', unsafe_allow_html=True)
-    
-    # Close the labels container
-    st.markdown('</div>', unsafe_allow_html=True)
 
-# Load CSS
-load_css()
-
-# Play background music if available
-bg_music_path = os.path.join("assets", "sounds", "zen_background.mp3")
-if os.path.exists(bg_music_path) and 'bg_music_played' not in st.session_state:
-    bg_music = get_audio_base64(bg_music_path)
-    if bg_music:
-        play_audio(bg_music)
-        st.session_state.bg_music_played = True
-
-# Landing page content
+# Landing page
 def landing_page():
-    # Create a container with proper styling for the main content
-    st.markdown('<div class="content-container" style="background-color: rgba(249, 245, 240, 0.85); padding: 2rem; border-radius: 15px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 1rem auto; max-width: 800px;">', unsafe_allow_html=True)
-    
-    # Main header
-    st.markdown('<h1 style="text-align: center; font-size: 3rem; color: #2A2A2A; margin-bottom: 2rem; font-family: \'Noto Serif JP\', serif;">Ikigai Pathway</h1>', unsafe_allow_html=True)
-    
-    # Hero section with animation
-    zen_animation = load_lottie_url("https://assets1.lottiefiles.com/packages/lf20_jR229r.json")
-    if zen_animation:
-        st_lottie(zen_animation, height=300, key="zen")
-    else:
-        # Fallback if animation doesn't load
-        st.image(os.path.join("assets", "images", "zen_garden_bg.png"), width=300)
-    
-    # Welcome text
-    st.markdown(
-        """
-        <div style="text-align: center; margin: 20px 0;">
-            <p style="font-size: 1.2rem;">Welcome to your journey of self-discovery through the ancient Japanese concept of Ikigai.</p>
-            <p style="font-size: 1.2rem;">Find where your passion, mission, vocation, and profession intersect to reveal your life's purpose.</p>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-    
-    # Haiku style explanation
-    st.markdown(
-        """
-        <div style="font-style: italic; text-align: center; margin: 2rem 0; font-size: 1.2rem;">
-            <p>What brings you joy? <span style="color: #F6CECE;">❀ What you love</span></p>
-            <p>Skills honed through time and practice <span style="color: #7BA17D;">❀ What you're good at</span></p>
-            <p>Service to others <span style="color: #3F4B83;">❀ What the world needs</span></p>
-            <p>Value exchanged <span style="color: #2A2A2A;">❀ What you can be paid for</span></p>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-    
-    # Start journey button
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("Begin Your Ikigai Journey", key="start_journey", 
-                    help="Click to start your Ikigai journey",
-                    use_container_width=True):
-            # Play water rippling sound if available
-            water_sound_path = os.path.join("assets", "sounds", "water_ripple.mp3")
-            if os.path.exists(water_sound_path):
-                water_sound = get_audio_base64(water_sound_path)
-                if water_sound:
-                    play_audio(water_sound)
-            
-            st.session_state.progress['landing_complete'] = True
-            switch_page("love")
-    
-    # Display Ema plaque image if available
-    ema_image_path = os.path.join("assets", "images", "ema_plaque.png")
-    if os.path.exists(ema_image_path):
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.image(ema_image_path, width=250)
-    
+    # Header
+    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+    st.markdown('<div class="header">', unsafe_allow_html=True)
+    st.markdown('<h1>Ikigai Pathway</h1>', unsafe_allow_html=True)
+    st.markdown('<p>Discover your purpose and find balance in life through the ancient Japanese concept of Ikigai</p>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
-
-# Main app logic
-if __name__ == "__main__":
-    # Display progress
+    
+    # Progress tracker
     display_progress()
     
-    # Show landing page
+    # Main content
+    st.markdown('<div class="two-column">', unsafe_allow_html=True)
+    
+    # Left column - Explanation
+    st.markdown('<div class="column">', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<h3>What is Ikigai?</h3>', unsafe_allow_html=True)
+    st.markdown("""
+    <p>
+    Ikigai (生き甲斐) is a Japanese concept that means "a reason for being." 
+    It is the intersection of four elements:
+    </p>
+    <ul>
+        <li><strong>What you love</strong> - Your passion and interests</li>
+        <li><strong>What you're good at</strong> - Your skills and strengths</li>
+        <li><strong>What the world needs</strong> - The problems you can help solve</li>
+        <li><strong>What you can be paid for</strong> - How you can earn a living</li>
+    </ul>
+    <p>
+    By exploring these four areas and finding their intersection, you can discover your Ikigai - 
+    your purpose that brings fulfillment and balance to your life.
+    </p>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Right column - Animation and button
+    st.markdown('<div class="column">', unsafe_allow_html=True)
+    st.markdown('<div class="card" style="text-align: center;">', unsafe_allow_html=True)
+    
+    # Lottie animation
+    if lottie_ikigai:
+        st_lottie(lottie_ikigai, height=250, key="ikigai_animation")
+    else:
+        st.image("https://i.imgur.com/8Fy90AI.png", width=250)
+    
+    st.markdown('<h3>Ready to find your Ikigai?</h3>', unsafe_allow_html=True)
+    st.markdown('<p>Begin your journey by exploring what you love. Each step will bring you closer to discovering your purpose.</p>', unsafe_allow_html=True)
+    
+    # Start button
+    if st.button("Begin Your Journey", key="start_button"):
+        st.session_state.progress['landing_complete'] = True
+        st.switch_page("pages/1_love.py")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close two-column
+    
+    # Footer
+    st.markdown('<div class="footer">', unsafe_allow_html=True)
+    st.markdown(' 2025 Ikigai Pathway | A journey to finding your purpose', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close main-container
+
+# Main app logic
+def main():
     landing_page()
+
+if __name__ == "__main__":
+    main()
