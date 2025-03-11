@@ -133,133 +133,80 @@ if 'paid_for_suggestions' not in st.session_state:
 
 # Progress visualization
 def display_progress():
-    st.markdown('<div class="progress-container">', unsafe_allow_html=True)
+    # Create a container with proper styling
+    st.markdown('<div style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px;">', unsafe_allow_html=True)
     
-    # Landing lantern
-    lantern_class = "lantern lit" if st.session_state.progress['landing_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">1</div>', unsafe_allow_html=True)
+    # Love lantern (completed)
+    st.markdown(f'<div style="width: 15px; height: 40px; border-radius: 10px; background-color: #e0e0e0; opacity: 0.7;"></div>', unsafe_allow_html=True)
     
-    # Path to Love
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
+    # Good At lantern (completed)
+    st.markdown(f'<div style="width: 15px; height: 40px; border-radius: 10px; background-color: #e0e0e0; opacity: 0.7;"></div>', unsafe_allow_html=True)
     
-    # Love lantern
-    lantern_class = "lantern lit" if st.session_state.progress['love_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">2</div>', unsafe_allow_html=True)
+    # World Needs lantern (completed)
+    st.markdown(f'<div style="width: 15px; height: 40px; border-radius: 10px; background-color: #e0e0e0; opacity: 0.7;"></div>', unsafe_allow_html=True)
     
-    # Path to Good At
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
+    # Paid For lantern (highlighted/active)
+    st.markdown(f'<div style="width: 15px; height: 40px; border-radius: 10px; background-color: #3498db; box-shadow: 0 0 10px #3498db;"></div>', unsafe_allow_html=True)
     
-    # Good At lantern
-    lantern_class = "lantern lit" if st.session_state.progress['good_at_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">3</div>', unsafe_allow_html=True)
-    
-    # Path to World Needs
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
-    
-    # World Needs lantern
-    lantern_class = "lantern lit" if st.session_state.progress['world_needs_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">4</div>', unsafe_allow_html=True)
-    
-    # Path to Paid For
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
-    
-    # Paid For lantern
-    lantern_class = "lantern lit" if st.session_state.progress['paid_for_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">5</div>', unsafe_allow_html=True)
-    
-    # Path to Chart
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
-    
-    # Chart lantern
-    lantern_class = "lantern lit" if st.session_state.progress['chart_generated'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">6</div>', unsafe_allow_html=True)
-    
+    # Close the container
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Function to get suggestions
-def get_suggestions(input_text, index):
-    if input_text and len(input_text) > 3:
-        suggestions = get_ai_suggestions(input_text, "paid_for")
-        st.session_state.paid_for_suggestions[index] = suggestions
-        return suggestions
-    return []
-
-# Function to add suggestion to input
-def add_suggestion_to_input(suggestion, index):
-    st.session_state.paid_for_inputs[index] = suggestion
-
 # Main content
-st.markdown('<h1 class="main-header">What You Can Be <span class="gold-accent">Paid For</span></h1>', unsafe_allow_html=True)
+st.markdown('<div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px auto; max-width: 800px;">', unsafe_allow_html=True)
 
-# Display progress
-display_progress()
+# Top section with question number and Ikigai Chart link
+st.markdown('<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">', unsafe_allow_html=True)
+st.markdown('<h2 style="color: #3498db;">Question 4</h2>', unsafe_allow_html=True)
+st.markdown('<a href="#" style="color: #3498db; text-decoration: underline;">Ikigai Chart</a>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown(
-    """
-    <div class="centered-content">
-        <p>Consider careers, services, or products that people would pay you for.</p>
-        <p>What value can you provide? What opportunities exist in the market?</p>
-    </div>
-    """, 
-    unsafe_allow_html=True
-)
+# Main question
+st.markdown('<h1 style="margin-bottom: 20px;">What can you be PAID FOR?</h1>', unsafe_allow_html=True)
 
-# Input fields
-st.markdown("### Share 3-5 ways you could be compensated for your skills and passions:")
+# User input section
+st.markdown('<p style="margin-bottom: 10px;">List careers, services, or products that people would pay you for:</p>', unsafe_allow_html=True)
 
-for i in range(5):
-    col1, col2 = st.columns([3, 1])
-    
-    with col1:
-        # Use a key that includes the index to ensure uniqueness
-        input_key = f"paid_for_input_{i}"
-        input_value = st.text_input(f"Item {i+1}", key=input_key, value=st.session_state.paid_for_inputs[i])
-        
-        # Update session state when input changes
-        if input_value != st.session_state.paid_for_inputs[i]:
-            st.session_state.paid_for_inputs[i] = input_value
-            # Get suggestions when input changes
-            if input_value:
-                get_suggestions(input_value, i)
-    
-    with col2:
-        if i == 0:
-            st.markdown("### AI Suggestions")
-        
-        # Display suggestions as clickable pills
-        if st.session_state.paid_for_suggestions[i]:
-            for suggestion in st.session_state.paid_for_suggestions[i]:
-                suggestion_html = f'<div class="suggestion-pill" onclick="document.getElementById(\'{input_key}\').value=\'{suggestion}\'; document.getElementById(\'{input_key}\').dispatchEvent(new Event(\'input\'));">{suggestion}</div>'
-                st.markdown(suggestion_html, unsafe_allow_html=True)
-        else:
-            st.markdown("Type more for suggestions")
+# Text area for user input
+user_input = st.text_area("Paid opportunities", key="paid_for_input", height=150)
+
+# Background image/decoration
+st.markdown('<div style="height: 150px; background-color: #f5f5f5; display: flex; justify-content: center; align-items: center; margin: 20px 0;"><span style="color: #888;">Background Image</span></div>', unsafe_allow_html=True)
+
+# AI suggestions section
+st.markdown('<div style="margin-top: 20px;">', unsafe_allow_html=True)
+st.markdown('<h3>AI Suggestions</h3>', unsafe_allow_html=True)
+
+if st.button("Get Suggestions", key="get_suggestions"):
+    if user_input:
+        with st.spinner("Generating suggestions..."):
+            suggestions = get_ai_suggestions(user_input, "paid_for")
+            if suggestions:
+                for i, suggestion in enumerate(suggestions):
+                    st.markdown(f"- {suggestion}")
+            else:
+                st.error("Unable to generate suggestions. Please try again.")
+    else:
+        st.warning("Please enter some text to get suggestions.")
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Navigation buttons
-col1, col2, col3 = st.columns([1, 2, 1])
+col1, col2 = st.columns(2)
+with col1:
+    st.button("Back", key="back_button", on_click=lambda: switch_page("world needs"))
 with col2:
-    col_back, col_next = st.columns(2)
-    
-    with col_back:
-        if st.button("← Back to What the World Needs", key="back_to_world_needs"):
-            switch_page("world needs")
-    
-    with col_next:
-        if st.button("Generate Your Ikigai Chart →", key="continue_to_chart"):
-            # Save responses to session state
-            valid_inputs = [inp for inp in st.session_state.paid_for_inputs if inp.strip()]
-            if valid_inputs:
-                st.session_state.responses['paid_for'] = valid_inputs
-                st.session_state.progress['paid_for_complete'] = True
-                switch_page("ikigai chart")
-            else:
-                st.error("Please enter at least one item before continuing.")
+    if st.button("Generate Ikigai Chart", key="next_button"):
+        # Save responses
+        if user_input:
+            st.session_state.responses['paid_for'] = [item.strip() for item in user_input.split('\n') if item.strip()]
+            st.session_state.progress['paid_for_complete'] = True
+            # Create a new page for the Ikigai chart
+            switch_page("ikigai_chart")
+        else:
+            st.warning("Please enter at least one thing you can be paid for before proceeding.")
 
-# JavaScript for handling suggestion clicks
-st.markdown("""
-<script>
-function updateInput(inputId, value) {
-    document.getElementById(inputId).value = value;
-    document.getElementById(inputId).dispatchEvent(new Event('input'));
-}
-</script>
-""", unsafe_allow_html=True)
+# Close the main container
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Display progress visualization
+display_progress()

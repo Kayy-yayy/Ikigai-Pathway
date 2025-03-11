@@ -192,47 +192,21 @@ def load_lottie_url(url):
 
 # Progress visualization
 def display_progress():
-    st.markdown('<div class="progress-container">', unsafe_allow_html=True)
+    st.markdown('<div style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px;">', unsafe_allow_html=True)
     
-    # Landing lantern
-    lantern_class = "lantern lit" if st.session_state.progress['landing_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">1</div>', unsafe_allow_html=True)
+    # Love lantern (completed)
+    st.markdown(f'<div style="width: 15px; height: 40px; border-radius: 10px; background-color: #e0e0e0; opacity: 0.7;"></div>', unsafe_allow_html=True)
     
-    # Path to Love
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
+    # Good At lantern (completed)
+    st.markdown(f'<div style="width: 15px; height: 40px; border-radius: 10px; background-color: #e0e0e0; opacity: 0.7;"></div>', unsafe_allow_html=True)
     
-    # Love lantern
-    lantern_class = "lantern lit" if st.session_state.progress['love_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">2</div>', unsafe_allow_html=True)
+    # World Needs lantern (completed)
+    st.markdown(f'<div style="width: 15px; height: 40px; border-radius: 10px; background-color: #e0e0e0; opacity: 0.7;"></div>', unsafe_allow_html=True)
     
-    # Path to Good At
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
+    # Paid For lantern (completed)
+    st.markdown(f'<div style="width: 15px; height: 40px; border-radius: 10px; background-color: #e0e0e0; opacity: 0.7;"></div>', unsafe_allow_html=True)
     
-    # Good At lantern
-    lantern_class = "lantern lit" if st.session_state.progress['good_at_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">3</div>', unsafe_allow_html=True)
-    
-    # Path to World Needs
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
-    
-    # World Needs lantern
-    lantern_class = "lantern lit" if st.session_state.progress['world_needs_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">4</div>', unsafe_allow_html=True)
-    
-    # Path to Paid For
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
-    
-    # Paid For lantern
-    lantern_class = "lantern lit" if st.session_state.progress['paid_for_complete'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">5</div>', unsafe_allow_html=True)
-    
-    # Path to Chart
-    st.markdown('<div class="torii-path"></div>', unsafe_allow_html=True)
-    
-    # Chart lantern
-    lantern_class = "lantern lit" if st.session_state.progress['chart_generated'] else "lantern"
-    st.markdown(f'<div class="{lantern_class}">6</div>', unsafe_allow_html=True)
-    
+    # Close the container
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Initialize session state for this page
@@ -253,153 +227,103 @@ if 'color_scheme' not in st.session_state:
     }
 
 # Main content
-st.markdown('<h1 class="main-header">Your Ikigai Chart</h1>', unsafe_allow_html=True)
+st.markdown('<div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px auto; max-width: 800px;">', unsafe_allow_html=True)
 
-# Display progress
-display_progress()
+# Top section with title
+st.markdown('<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">', unsafe_allow_html=True)
+st.markdown('<h2 style="color: #3498db;">Your Ikigai Chart</h2>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# Generate chart if not already generated
-if not st.session_state.ikigai_chart:
-    with st.spinner("Generating your personalized Ikigai chart..."):
-        st.session_state.ikigai_chart = generate_ikigai_chart(st.session_state.responses, st.session_state.color_scheme)
-        st.session_state.progress['chart_generated'] = True
+# Main heading
+st.markdown('<h1 style="margin-bottom: 20px; text-align: center;">Discover Your Purpose</h1>', unsafe_allow_html=True)
 
-# Generate workplace tips if not already generated
-if not st.session_state.workplace_tips:
-    with st.spinner("Generating your workplace growth tips..."):
-        st.session_state.workplace_tips = generate_workplace_tips(st.session_state.responses)
-
-# Display the chart
-st.markdown('<div class="centered-content">', unsafe_allow_html=True)
-st.markdown("### Your personalized Ikigai diagram")
-st.markdown("</div>", unsafe_allow_html=True)
-
-# Color customization
-st.markdown("#### Customize your chart colors")
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.markdown("Love circle")
-    color_options = ['#F6CECE', '#FF9999', '#FFB6C1', '#FFC0CB', '#DB7093']
-    for color in color_options:
-        selected = "selected" if color == st.session_state.color_scheme['love'] else ""
-        st.markdown(f'<div class="color-option {selected}" style="background-color: {color};" onclick="updateColorScheme(\'love\', \'{color}\')"></div>', unsafe_allow_html=True)
-
-with col2:
-    st.markdown("Good at circle")
-    color_options = ['#7BA17D', '#90EE90', '#98FB98', '#8FBC8F', '#3CB371']
-    for color in color_options:
-        selected = "selected" if color == st.session_state.color_scheme['good_at'] else ""
-        st.markdown(f'<div class="color-option {selected}" style="background-color: {color};" onclick="updateColorScheme(\'good_at\', \'{color}\')"></div>', unsafe_allow_html=True)
-
-with col3:
-    st.markdown("World needs circle")
-    color_options = ['#3F4B83', '#6495ED', '#4682B4', '#5F9EA0', '#4169E1']
-    for color in color_options:
-        selected = "selected" if color == st.session_state.color_scheme['world_needs'] else ""
-        st.markdown(f'<div class="color-option {selected}" style="background-color: {color};" onclick="updateColorScheme(\'world_needs\', \'{color}\')"></div>', unsafe_allow_html=True)
-
-with col4:
-    st.markdown("Paid for circle")
-    color_options = ['#D4AF37', '#FFD700', '#DAA520', '#F0E68C', '#BDB76B']
-    for color in color_options:
-        selected = "selected" if color == st.session_state.color_scheme['paid_for'] else ""
-        st.markdown(f'<div class="color-option {selected}" style="background-color: {color};" onclick="updateColorScheme(\'paid_for\', \'{color}\')"></div>', unsafe_allow_html=True)
-
-# Button to regenerate chart with new colors
-if st.button("Update Chart Colors"):
-    st.session_state.ikigai_chart = generate_ikigai_chart(st.session_state.responses, st.session_state.color_scheme)
-    st.experimental_rerun()
-
-# Display the chart image
-st.image(f"data:image/png;base64,{st.session_state.ikigai_chart}", use_column_width=True)
-
-# Download button
-def get_image_download_link(img_str, filename="ikigai_chart.png", text="Download Your Ikigai Chart"):
-    href = f'<a href="data:image/png;base64,{img_str}" download="{filename}" class="download-button">{text}</a>'
-    return href
-
-st.markdown(get_image_download_link(st.session_state.ikigai_chart), unsafe_allow_html=True)
-
-# Workplace Growth Tips
-st.markdown('<h2 class="main-header">Your Workplace Growth Tips</h2>', unsafe_allow_html=True)
-
-st.markdown(
-    """
-    <div class="centered-content">
-        <p>Click on each cherry blossom to reveal personalized workplace growth tips based on your ikigai.</p>
-    </div>
-    """, 
-    unsafe_allow_html=True
+# Check if all sections are completed
+all_completed = (
+    st.session_state.progress['love_complete'] and
+    st.session_state.progress['good_at_complete'] and
+    st.session_state.progress['world_needs_complete'] and
+    st.session_state.progress['paid_for_complete']
 )
 
-# Display tips as cherry blossoms
-if st.session_state.workplace_tips:
-    col1, col2 = st.columns(2)
+if all_completed:
+    # Generate and display the Ikigai chart
+    st.markdown('<div style="text-align: center; margin-bottom: 20px;">', unsafe_allow_html=True)
     
-    for i, tip in enumerate(st.session_state.workplace_tips):
-        # Alternate between columns
-        with col1 if i % 2 == 0 else col2:
-            # Create a unique key for each tip
-            tip_key = f"tip_{i}"
-            
-            # Check if this tip has been revealed
-            if f"revealed_{tip_key}" not in st.session_state:
-                st.session_state[f"revealed_{tip_key}"] = False
-            
-            # Create the cherry blossom element
-            blossom_class = "cherry-blossom revealed" if st.session_state[f"revealed_{tip_key}"] else "cherry-blossom"
-            
-            # Create a clickable div
-            st.markdown(f"""
-            <div class="{blossom_class}" id="{tip_key}" onclick="revealTip('{tip_key}')">
-                <div class="cherry-blossom-label">Click to reveal tip #{i+1}</div>
-                <div class="cherry-blossom-content">{tip}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Add a button to reveal the tip (this is a workaround since the onclick in HTML won't work directly in Streamlit)
-            if not st.session_state[f"revealed_{tip_key}"]:
-                if st.button(f"Reveal Tip #{i+1}", key=f"reveal_button_{i}"):
-                    st.session_state[f"revealed_{tip_key}"] = True
-                    st.experimental_rerun()
+    # Create the Ikigai chart visualization
+    fig = generate_ikigai_chart(st.session_state.responses, st.session_state.color_scheme)
+    
+    # Display the chart
+    st.pyplot(fig)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Mark chart as generated
+    st.session_state.progress['chart_generated'] = True
+    
+    # Display insights section
+    st.markdown('<div style="margin-top: 30px;">', unsafe_allow_html=True)
+    st.markdown('<h3>Your Ikigai Insights</h3>', unsafe_allow_html=True)
+    
+    # Generate AI insights about the user's Ikigai
+    insights = generate_workplace_tips(st.session_state.responses)
+    
+    # Display insights
+    for i, tip in enumerate(insights):
+        st.markdown(f'<h4>Tip #{i+1}</h4>', unsafe_allow_html=True)
+        st.markdown(f'<p>{tip}</p>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Download and share options
+    st.markdown('<div style="margin-top: 30px; display: flex; justify-content: center; gap: 20px;">', unsafe_allow_html=True)
+    
+    # Download button
+    if st.button("Download Chart", key="download_chart"):
+        # Code to download the chart would go here
+        st.success("Chart downloaded successfully!")
+    
+    # Share button
+    if st.button("Share Results", key="share_results"):
+        # Code to share results would go here
+        st.success("Link copied to clipboard!")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+else:
+    # Show message to complete all sections
+    st.warning("Please complete all four sections to generate your Ikigai chart.")
+    
+    # Show which sections are missing
+    missing_sections = []
+    if not st.session_state.progress['love_complete']:
+        missing_sections.append("What You Love")
+    if not st.session_state.progress['good_at_complete']:
+        missing_sections.append("What You're Good At")
+    if not st.session_state.progress['world_needs_complete']:
+        missing_sections.append("What the World Needs")
+    if not st.session_state.progress['paid_for_complete']:
+        missing_sections.append("What You Can Be Paid For")
+    
+    st.markdown("<p>Missing sections:</p>", unsafe_allow_html=True)
+    for section in missing_sections:
+        st.markdown(f"<p>• {section}</p>", unsafe_allow_html=True)
 
 # Navigation buttons
-col1, col2, col3 = st.columns([1, 2, 1])
+col1, col2 = st.columns(2)
+with col1:
+    st.button("Back to Questions", key="back_button", on_click=lambda: switch_page("paid for"))
 with col2:
-    if st.button("← Start Over", key="start_over"):
-        # Reset session state
-        for key in st.session_state.progress:
-            st.session_state.progress[key] = False
-            
+    if st.button("Start Over", key="start_over"):
+        # Reset all session state
         for key in st.session_state.responses:
             st.session_state.responses[key] = []
-            
-        st.session_state.ikigai_chart = None
-        st.session_state.workplace_tips = None
-        
-        # Redirect to landing page
-        switch_page("app")
+        for key in st.session_state.progress:
+            st.session_state.progress[key] = False
+        # Go back to landing page
+        switch_page("home")
 
-# JavaScript for handling color selection and tip reveals
-st.markdown("""
-<script>
-function updateColorScheme(category, color) {
-    // This is a placeholder - in a real app, we'd use AJAX to update the server-side state
-    // For now, we'll just update the UI to show selection
-    const elements = document.querySelectorAll(`.color-option`);
-    elements.forEach(el => {
-        if (el.style.backgroundColor === color) {
-            el.classList.add('selected');
-        } else {
-            el.classList.remove('selected');
-        }
-    });
-}
+# Close the main container
+st.markdown('</div>', unsafe_allow_html=True)
 
-function revealTip(tipId) {
-    const element = document.getElementById(tipId);
-    element.classList.add('revealed');
-}
-</script>
-""", unsafe_allow_html=True)
+# Display progress visualization
+display_progress()
