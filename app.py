@@ -255,6 +255,12 @@ def display_progress():
     # Close the labels container
     st.markdown('</div>', unsafe_allow_html=True)
 
+# Function to get base64 encoding of an image file
+def get_base64_from_file(file_path):
+    with open(file_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode()
+    return encoded_string
+
 # Load CSS
 load_css()
 
@@ -272,30 +278,97 @@ def landing_page():
     
     with col2:
         # Container for the main content
-        st.markdown('<div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">', unsafe_allow_html=True)
+        st.markdown('<div style="background-color: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">', unsafe_allow_html=True)
         
-        # Top section with avatar and about link
-        st.markdown('<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">', unsafe_allow_html=True)
+        # Top section with avatar and navigation
+        st.markdown('<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">', unsafe_allow_html=True)
         
-        # Avatar image
-        st.markdown('<div style="width: 80px; height: 80px; border-radius: 50%; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center;"><span style="color: #888;">Avatar</span></div>', unsafe_allow_html=True)
+        # Avatar image - enlarged and in the top left
+        st.markdown('<div style="width: 100px; height: 100px; border-radius: 50%; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); overflow: hidden;"><img src="https://img.icons8.com/cotton/64/000000/user-female--v4.png" style="width: 80%; height: 80%; object-fit: cover;"></div>', unsafe_allow_html=True)
+        
+        # Navigation bar in the top right
+        st.markdown('<div style="display: flex; gap: 20px; background-color: rgba(255, 255, 255, 0.8); padding: 10px 20px; border-radius: 30px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">', unsafe_allow_html=True)
         
         # About link
-        st.markdown('<div style="text-align: right;"><a href="#" style="color: #3498db; text-decoration: underline;">About Ikigai Chart</a></div>', unsafe_allow_html=True)
+        st.markdown('<a href="#" onclick="window.open(\'/about\', \'_self\')" style="color: #3498db; text-decoration: none; font-weight: 500; transition: all 0.3s ease;">About</a>', unsafe_allow_html=True)
+        
+        # Ikigai Chart link
+        st.markdown('<a href="#" onclick="window.open(\'/ikigai_chart\', \'_self\')" style="color: #3498db; text-decoration: none; font-weight: 500; transition: all 0.3s ease;">Ikigai Chart</a>', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Headline and subtitle
         st.markdown('<h1 style="text-align: center; color: #333; font-size: 2.5rem; margin-bottom: 10px;">Find Your Ikigai</h1>', unsafe_allow_html=True)
         st.markdown('<p style="text-align: center; color: #666; font-size: 1.2rem; margin-bottom: 30px;">Discover your purpose through the ancient Japanese concept</p>', unsafe_allow_html=True)
         
-        # Background image placeholder
-        st.markdown('<div style="height: 200px; background-color: #f5f5f5; display: flex; justify-content: center; align-items: center; margin-bottom: 30px;"><span style="color: #888;">Background Image</span></div>', unsafe_allow_html=True)
+        # Use the actual background image
+        bg_image_path = "C:/Ikigai-Pathway/assets/images/zen_garden_bg.jpg"
+        if os.path.exists(bg_image_path):
+            st.image(bg_image_path, use_column_width=True)
         
-        # Begin Journey button
-        st.markdown('<div style="text-align: center;">', unsafe_allow_html=True)
-        if st.button('Begin Your Journey', key='begin_journey', use_container_width=True):
-            switch_page("love")
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Begin Journey button with 3D effect
+        st.markdown('''
+        <div style="text-align: center; margin-top: 30px;">
+            <button id="begin-journey-btn" style="
+                background-color: #7BA17D;
+                color: white;
+                border: none;
+                border-radius: 30px;
+                padding: 15px 40px;
+                font-size: 1.2rem;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 6px 0 #5a7a5c, 0 8px 10px rgba(0, 0, 0, 0.2);
+                transition: all 0.2s ease;
+                position: relative;
+                top: 0;
+            ">
+                Begin Your Journey
+            </button>
+        </div>
+        
+        <script>
+            document.getElementById("begin-journey-btn").addEventListener("mouseover", function() {
+                this.style.backgroundColor = "#6a9070";
+                this.style.top = "-2px";
+                this.style.boxShadow = "0 8px 0 #5a7a5c, 0 10px 15px rgba(0, 0, 0, 0.25)";
+            });
+            
+            document.getElementById("begin-journey-btn").addEventListener("mouseout", function() {
+                this.style.backgroundColor = "#7BA17D";
+                this.style.top = "0";
+                this.style.boxShadow = "0 6px 0 #5a7a5c, 0 8px 10px rgba(0, 0, 0, 0.2)";
+            });
+            
+            document.getElementById("begin-journey-btn").addEventListener("mousedown", function() {
+                this.style.top = "4px";
+                this.style.boxShadow = "0 2px 0 #5a7a5c, 0 4px 6px rgba(0, 0, 0, 0.2)";
+            });
+            
+            document.getElementById("begin-journey-btn").addEventListener("mouseup", function() {
+                this.style.top = "-2px";
+                this.style.boxShadow = "0 8px 0 #5a7a5c, 0 10px 15px rgba(0, 0, 0, 0.25)";
+            });
+        </script>
+        ''', unsafe_allow_html=True)
+        
+        # Use Streamlit button for functionality but hide it with CSS
+        st.markdown('<style>#begin-journey-btn-container { display: none; }</style>', unsafe_allow_html=True)
+        with st.container():
+            st.markdown('<div id="begin-journey-btn-container">', unsafe_allow_html=True)
+            if st.button('Begin Your Journey', key='begin_journey'):
+                switch_page("love")
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        # JavaScript to connect the custom button to the hidden Streamlit button
+        st.markdown('''
+        <script>
+            document.getElementById("begin-journey-btn").addEventListener("click", function() {
+                document.querySelector('button[kind="primary"]').click();
+            });
+        </script>
+        ''', unsafe_allow_html=True)
         
         # Close the main container
         st.markdown('</div>', unsafe_allow_html=True)
