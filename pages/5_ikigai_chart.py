@@ -250,10 +250,13 @@ if all_completed:
     st.markdown('<div style="text-align: center; margin-bottom: 20px;">', unsafe_allow_html=True)
     
     # Create the Ikigai chart visualization
-    fig = generate_ikigai_chart(st.session_state.responses, st.session_state.color_scheme)
+    chart_image = generate_ikigai_chart(
+        st.session_state.responses,
+        st.session_state.color_scheme
+    )
     
-    # Display the chart
-    st.pyplot(fig)
+    # Display the chart as an image
+    st.image(f"data:image/png;base64,{chart_image}", use_column_width=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     
