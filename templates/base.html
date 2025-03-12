@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ikigai Pathway{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500;600;700&family=Sawarabi+Mincho&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="avatar-container">
+                {% if session.get('user_id') %}
+                <div class="user-avatar" id="userAvatar"></div>
+                {% endif %}
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('ikigai_chart') }}">Ikigai Chart</a></li>
+                    {% if session.get('user_id') %}
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; {{ now.year }} Ikigai Pathway. All rights reserved.</p>
+        </div>
+    </footer>
+
+    {% if not session.get('user_id') %}
+    <div class="signup-overlay" id="signupOverlay">
+        <div class="signup-modal">
+            <h2>Begin Your Journey</h2>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label>Choose an Avatar</label>
+                    <div class="avatar-selection">
+                        <div class="avatar-option">
+                            <input type="radio" id="avatar1" name="avatar" value="avatar1.png" checked>
+                            <label for="avatar1"><img src="{{ url_for('static', filename='images/avatar1.png') }}" alt="Avatar 1"></label>
+                        </div>
+                        <div class="avatar-option">
+                            <input type="radio" id="avatar2" name="avatar" value="avatar2.png">
+                            <label for="avatar2"><img src="{{ url_for('static', filename='images/avatar2.png') }}" alt="Avatar 2"></label>
+                        </div>
+                        <div class="avatar-option">
+                            <input type="radio" id="avatar3" name="avatar" value="avatar3.png">
+                            <label for="avatar3"><img src="{{ url_for('static', filename='images/avatar3.png') }}" alt="Avatar 3"></label>
+                        </div>
+                        <div class="avatar-option">
+                            <input type="radio" id="avatar4" name="avatar" value="avatar4.png">
+                            <label for="avatar4"><img src="{{ url_for('static', filename='images/avatar4.png') }}" alt="Avatar 4"></label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Begin</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,590 @@
+/* Base Styles */
+:root {
+    --sakura-pink: #F6CECE;
+    --bamboo-green: #7BA17D;
+    --indigo-blue: #3F4B83;
+    --sumi-black: #2A2A2A;
+    --gold: #D4AF37;
+    --light-gray: #f5f5f5;
+    --white: #ffffff;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Sawarabi Mincho', serif;
+    color: var(--sumi-black);
+    line-height: 1.6;
+    background-color: var(--white);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+a {
+    color: var(--indigo-blue);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--bamboo-green);
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Button Styles */
+.btn-primary {
+    display: inline-block;
+    background-color: var(--bamboo-green);
+    color: var(--white);
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    border: none;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: var(--shadow);
+}
+
+.btn-primary:hover {
+    background-color: #6a9069;
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Header Styles */
+header {
+    background-color: var(--white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.avatar-container {
+    width: 40px;
+    height: 40px;
+}
+
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    box-shadow: var(--shadow);
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+}
+
+nav ul li {
+    margin-left: 2rem;
+}
+
+nav ul li a {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 500;
+    position: relative;
+}
+
+nav ul li a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--bamboo-green);
+    transition: width 0.3s ease;
+}
+
+nav ul li a:hover::after {
+    width: 100%;
+}
+
+/* Footer Styles */
+footer {
+    background-color: var(--sumi-black);
+    color: var(--white);
+    padding: 2rem 0;
+    margin-top: 4rem;
+}
+
+.footer-container {
+    text-align: center;
+}
+
+/* Signup Modal */
+.signup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.signup-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.signup-modal {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.signup-modal h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--indigo-blue);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Sawarabi Mincho', serif;
+}
+
+.avatar-selection {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.avatar-option {
+    text-align: center;
+}
+
+.avatar-option input[type="radio"] {
+    display: none;
+}
+
+.avatar-option label {
+    display: block;
+    cursor: pointer;
+}
+
+.avatar-option img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    transition: border-color 0.3s ease;
+}
+
+.avatar-option input[type="radio"]:checked + label img {
+    border-color: var(--bamboo-green);
+}
+
+/* Hero Section */
+.hero {
+    background-image: url('../images/zen_garden.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.hero-content {
+    position: relative;
+    color: var(--white);
+    max-width: 800px;
+    padding: 2rem;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+/* Journey Preview Section */
+.journey-preview {
+    padding: 4rem 0;
+}
+
+.journey-preview h2 {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.pillar-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.pillar-card {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.pillar-card:hover {
+    transform: translateY(-10px);
+}
+
+.pillar-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.passion-icon {
+    background-color: var(--sakura-pink);
+}
+
+.mission-icon {
+    background-color: var(--bamboo-green);
+}
+
+.profession-icon {
+    background-color: var(--gold);
+}
+
+.vocation-icon {
+    background-color: var(--indigo-blue);
+}
+
+.pillar-link {
+    display: inline-block;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
+/* Zen Quote Section */
+.zen-quote {
+    background-color: var(--light-gray);
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.zen-quote blockquote {
+    font-size: 1.5rem;
+    font-style: italic;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.zen-quote blockquote::before,
+.zen-quote blockquote::after {
+    content: '"';
+    font-size: 3rem;
+    color: var(--sakura-pink);
+    position: absolute;
+}
+
+.zen-quote blockquote::before {
+    top: -20px;
+    left: -20px;
+}
+
+.zen-quote blockquote::after {
+    bottom: -40px;
+    right: -20px;
+}
+
+/* About Page Styles */
+.about-hero {
+    background-color: var(--indigo-blue);
+    color: var(--white);
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.about-content {
+    padding: 4rem 0;
+}
+
+.content-block {
+    margin-bottom: 3rem;
+}
+
+.element-card {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--light-gray);
+    border-radius: 8px;
+}
+
+.element-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 1.5rem;
+    flex-shrink: 0;
+}
+
+.element-content {
+    flex-grow: 1;
+}
+
+.cta-block {
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--light-gray);
+    border-radius: 8px;
+    margin-top: 3rem;
+}
+
+/* Pillar Page Styles */
+.pillar-hero {
+    padding: 4rem 0;
+    text-align: center;
+    color: var(--white);
+}
+
+.passion-hero {
+    background-color: var(--sakura-pink);
+}
+
+.mission-hero {
+    background-color: var(--bamboo-green);
+}
+
+.vocation-hero {
+    background-color: var(--indigo-blue);
+}
+
+.profession-hero {
+    background-color: var(--gold);
+}
+
+.pillar-questions {
+    padding: 4rem 0;
+}
+
+.question-module {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.question-block {
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    background-color: var(--light-gray);
+    border-radius: 8px;
+}
+
+.question-description {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.answers-container {
+    margin-bottom: 1rem;
+}
+
+.answer-input-container {
+    position: relative;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.answer-input {
+    flex-grow: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Sawarabi Mincho', serif;
+}
+
+.remove-answer-btn {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+.suggestions-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--white);
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 10;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.suggestion {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion:hover {
+    background-color: var(--light-gray);
+}
+
+.add-answer-btn {
+    background: none;
+    border: none;
+    color: var(--bamboo-green);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* Chart Page Styles */
+.chart-hero {
+    background-color: var(--indigo-blue);
+    color: var(--white);
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.ikigai-chart-section {
+    padding: 4rem 0;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+    }
+    
+    nav ul {
+        margin-top: 1rem;
+    }
+    
+    nav ul li {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+    
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .element-card {
+        flex-direction: column;
+    }
+    
+    .element-icon {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .hero p {
+        font-size: 1rem;
+    }
+    
+    .avatar-selection {
+        justify-content: center;
+    }
+}
