@@ -7,47 +7,35 @@
     <div class="hero-content">
         <h1>Discover Your Ikigai</h1>
         <p>Begin a mindful journey to find your life's purpose through the ancient Japanese concept of Ikigai</p>
-        <button id="beginJourneyBtn" class="btn-primary">Begin Your Journey</button>
+        <button id="begin-journey" class="btn btn-primary">Begin Your Journey</button>
     </div>
 </section>
 
-<section class="journey-preview">
+<section class="ikigai-intro">
     <div class="container">
-        <h2>Your Path to Purpose</h2>
+        <h2>The Four Pillars of Ikigai</h2>
         <div class="pillar-cards">
-            <div class="pillar-card">
-                <div class="pillar-icon passion-icon"></div>
+            <div class="pillar-card" id="passion-card">
                 <h3>What You Love</h3>
-                <p>Discover your passions and what brings you joy</p>
-                <a href="{{ url_for('pillar', pillar_name='passion') }}" class="pillar-link">Explore Passion</a>
+                <p>Discover activities and interests that bring you joy and fulfillment.</p>
+                <a href="{{ url_for('pillar', pillar_name='passion') }}" class="btn btn-secondary">Explore</a>
             </div>
-            <div class="pillar-card">
-                <div class="pillar-icon mission-icon"></div>
+            <div class="pillar-card" id="mission-card">
                 <h3>What the World Needs</h3>
-                <p>Identify how you can contribute to society</p>
-                <a href="{{ url_for('pillar', pillar_name='mission') }}" class="pillar-link">Explore Mission</a>
+                <p>Identify how your skills and interests can serve others and make a positive impact.</p>
+                <a href="{{ url_for('pillar', pillar_name='mission') }}" class="btn btn-secondary">Explore</a>
             </div>
-            <div class="pillar-card">
-                <div class="pillar-icon profession-icon"></div>
-                <h3>What You Can Be Paid For</h3>
-                <p>Recognize your marketable skills and talents</p>
-                <a href="{{ url_for('pillar', pillar_name='profession') }}" class="pillar-link">Explore Profession</a>
-            </div>
-            <div class="pillar-card">
-                <div class="pillar-icon vocation-icon"></div>
+            <div class="pillar-card" id="vocation-card">
                 <h3>What You Are Good At</h3>
-                <p>Acknowledge your strengths and abilities</p>
-                <a href="{{ url_for('pillar', pillar_name='vocation') }}" class="pillar-link">Explore Vocation</a>
+                <p>Recognize your natural talents and developed skills.</p>
+                <a href="{{ url_for('pillar', pillar_name='vocation') }}" class="btn btn-secondary">Explore</a>
+            </div>
+            <div class="pillar-card" id="profession-card">
+                <h3>What You Can Be Paid For</h3>
+                <p>Explore how your passions and skills can translate into financial stability.</p>
+                <a href="{{ url_for('pillar', pillar_name='profession') }}" class="btn btn-secondary">Explore</a>
             </div>
         </div>
-    </div>
-</section>
-
-<section class="zen-quote">
-    <div class="container">
-        <blockquote>
-            "Your ikigai is at the intersection of what you love, what you're good at, what the world needs, and what you can be paid for."
-        </blockquote>
     </div>
 </section>
 {% endblock %}
@@ -55,14 +43,60 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const beginJourneyBtn = document.getElementById('beginJourneyBtn');
-        const signupOverlay = document.getElementById('signupOverlay');
+        // Show signup modal for new users
+        const modal = document.getElementById('signup-modal');
+        const beginJourneyBtn = document.getElementById('begin-journey');
+        const closeBtn = document.querySelector('.close');
         
-        if (beginJourneyBtn && signupOverlay) {
+        // Check if user is not logged in
+        {% if not current_user.is_authenticated %}
+            // Show modal when "Begin Your Journey" button is clicked
             beginJourneyBtn.addEventListener('click', function() {
-                signupOverlay.classList.add('active');
+                modal.style.display = 'block';
             });
-        }
+            
+            // Close modal when X is clicked
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside of it
+            window.addEventListener('click', function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        {% else %}
+            // If user is logged in, redirect to first pillar
+            beginJourneyBtn.addEventListener('click', function() {
+                window.location.href = "{{ url_for('pillar', pillar_name='passion') }}";
+            });
+        {% endif %}
+        
+        // Handle signup form submission
+        const signupForm = document.getElementById('signup-form');
+        signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(signupForm);
+            
+            fetch("{{ url_for('signup') }}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "{{ url_for('pillar', pillar_name='passion') }}";
+                } else {
+                    alert(data.message || 'Error signing up. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
     });
 </script>
 {% endblock %}

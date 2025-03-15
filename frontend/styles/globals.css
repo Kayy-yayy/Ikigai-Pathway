@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&family=Sawarabi+Mincho&display=swap');
+
+:root {
+  --sakura-pink: #F6CECE;
+  --bamboo-green: #7BA17D;
+  --indigo-blue: #3F4B83;
+  --sumi-black: #2A2A2A;
+  --accent-gold: #D4AF37;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Sawarabi Mincho', sans-serif;
+  color: var(--sumi-black);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Noto Serif JP', serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom component classes */
+@layer components {
+  .btn {
+    @apply px-6 py-2 rounded-md font-medium transition-all duration-300;
+  }
+  
+  .btn-primary {
+    @apply bg-bamboo-green text-white hover:bg-opacity-90;
+  }
+  
+  .btn-secondary {
+    @apply bg-sakura-pink text-sumi-black hover:bg-opacity-90;
+  }
+  
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .hero {
+    @apply min-h-[70vh] flex items-center justify-center bg-zen-garden bg-cover bg-center;
+  }
+  
+  .hero-content {
+    @apply bg-white bg-opacity-90 p-8 rounded-lg max-w-2xl text-center;
+  }
+  
+  .modal {
+    @apply fixed inset-0 bg-sumi-black bg-opacity-50 flex items-center justify-center z-50 hidden;
+  }
+  
+  .modal-content {
+    @apply bg-white p-8 rounded-lg max-w-md w-full;
+  }
+  
+  .form-group {
+    @apply mb-4;
+  }
+  
+  .form-group label {
+    @apply block mb-2 text-sm font-medium;
+  }
+  
+  .form-group input {
+    @apply w-full p-2 border border-gray-300 rounded-md;
+  }
+  
+  .avatar-selection {
+    @apply grid grid-cols-4 gap-4 mt-2;
+  }
+  
+  .avatar-option {
+    @apply relative;
+  }
+  
+  .avatar-option input {
+    @apply absolute opacity-0;
+  }
+  
+  .avatar-option label {
+    @apply block cursor-pointer border-2 border-transparent rounded-full overflow-hidden;
+  }
+  
+  .avatar-option input:checked + label {
+    @apply border-accent-gold;
+  }
+  
+  .avatar-option img {
+    @apply w-full h-auto;
+  }
+  
+  .pillar-card {
+    @apply bg-white p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg;
+  }
+  
+  .question-card {
+    @apply bg-white p-6 rounded-lg shadow-md mb-6;
+  }
+  
+  .response-area {
+    @apply mt-4;
+  }
+  
+  .response-input {
+    @apply w-full p-3 border border-gray-300 rounded-md min-h-[100px];
+  }
+  
+  .ai-suggestions {
+    @apply mt-2 text-sm;
+  }
+  
+  .suggestions-container {
+    @apply flex flex-wrap gap-2 mt-1;
+  }
+  
+  .suggestion-tag {
+    @apply bg-sakura-pink px-2 py-1 rounded-md cursor-pointer hover:bg-opacity-80;
+  }
+  
+  .ikigai-diagram {
+    @apply relative w-full max-w-[600px] h-[600px] mx-auto;
+  }
+}

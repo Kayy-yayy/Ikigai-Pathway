@@ -1,182 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}{{ pillar|capitalize }} - Ikigai Pathway{% endblock %}
+{% block title %}{{ pillar.title }} | Ikigai Pathway{% endblock %}
 
 {% block content %}
-<section class="pillar-hero {{ pillar }}-hero">
+<section class="pillar-hero {{ pillar_name }}-hero">
     <div class="container">
-        <h1>Explore Your {{ pillar|capitalize }}</h1>
-        {% if pillar == 'passion' %}
-        <p class="subtitle">What You Love</p>
-        {% elif pillar == 'mission' %}
-        <p class="subtitle">What the World Needs</p>
-        {% elif pillar == 'vocation' %}
-        <p class="subtitle">What You Are Good At</p>
-        {% elif pillar == 'profession' %}
-        <p class="subtitle">What You Can Be Paid For</p>
-        {% endif %}
+        <h1>{{ pillar.title }}</h1>
+        <p class="subtitle">{{ pillar.description }}</p>
     </div>
 </section>
 
-<section class="pillar-questions">
+<section class="questions-section">
     <div class="container">
-        <div class="question-module">
-            <form id="pillarForm">
-                <input type="hidden" id="pillarType" value="{{ pillar }}">
-                
-                {% if pillar == 'passion' %}
-                <div class="question-block">
-                    <h3>What activities make you lose track of time?</h3>
-                    <p class="question-description">Think about moments when you were so engaged that hours passed without you noticing.</p>
-                    <div class="answers-container" data-question="1">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
+        <div class="questions-container">
+            {% for question in pillar.questions %}
+                <div class="question-card" data-question-id="{{ loop.index0 }}">
+                    <h3>{{ question }}</h3>
+                    <div class="response-area">
+                        <textarea 
+                            placeholder="Type your response here..." 
+                            data-pillar="{{ pillar_name }}" 
+                            data-question-id="{{ loop.index0 }}"
+                            class="response-input"
+                        ></textarea>
+                        <div class="ai-suggestions">
+                            <p>Suggestions will appear here as you type...</p>
                             <div class="suggestions-container"></div>
                         </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
                     </div>
                 </div>
-                
-                <div class="question-block">
-                    <h3>What topics do you enjoy learning about?</h3>
-                    <p class="question-description">Consider subjects that naturally capture your interest and curiosity.</p>
-                    <div class="answers-container" data-question="2">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                <div class="question-block">
-                    <h3>What would you do even if you weren't paid for it?</h3>
-                    <p class="question-description">Identify activities you find intrinsically rewarding, regardless of compensation.</p>
-                    <div class="answers-container" data-question="3">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                {% elif pillar == 'mission' %}
-                <div class="question-block">
-                    <h3>What problems in the world do you feel drawn to solve?</h3>
-                    <p class="question-description">Consider issues that you feel emotionally connected to or concerned about.</p>
-                    <div class="answers-container" data-question="1">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                <div class="question-block">
-                    <h3>How would you like to contribute to your community or society?</h3>
-                    <p class="question-description">Think about the positive impact you'd like to make in the lives of others.</p>
-                    <div class="answers-container" data-question="2">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                <div class="question-block">
-                    <h3>What changes would you like to see in the world?</h3>
-                    <p class="question-description">Envision how the world could be better and what role you might play.</p>
-                    <div class="answers-container" data-question="3">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                {% elif pillar == 'vocation' %}
-                <div class="question-block">
-                    <h3>What skills come naturally to you?</h3>
-                    <p class="question-description">Consider abilities that you've always had a knack for, even without formal training.</p>
-                    <div class="answers-container" data-question="1">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                <div class="question-block">
-                    <h3>What do others recognize you for being good at?</h3>
-                    <p class="question-description">Think about compliments you receive or tasks people often ask for your help with.</p>
-                    <div class="answers-container" data-question="2">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                <div class="question-block">
-                    <h3>What skills have you developed through education or experience?</h3>
-                    <p class="question-description">Consider abilities you've cultivated through deliberate practice or study.</p>
-                    <div class="answers-container" data-question="3">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                {% elif pillar == 'profession' %}
-                <div class="question-block">
-                    <h3>What services or skills do people value enough to pay for?</h3>
-                    <p class="question-description">Consider what you offer that meets a market demand.</p>
-                    <div class="answers-container" data-question="1">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                <div class="question-block">
-                    <h3>What work environments or industries appeal to you?</h3>
-                    <p class="question-description">Think about where you'd thrive professionally based on culture, pace, and focus.</p>
-                    <div class="answers-container" data-question="2">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                
-                <div class="question-block">
-                    <h3>What career paths align with your values and lifestyle goals?</h3>
-                    <p class="question-description">Consider how different professions would support the life you want to lead.</p>
-                    <div class="answers-container" data-question="3">
-                        <div class="answer-input-container">
-                            <input type="text" class="answer-input" placeholder="Enter your answer...">
-                            <div class="suggestions-container"></div>
-                        </div>
-                        <button type="button" class="add-answer-btn">+ Add Another Answer</button>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">Save & Continue</button>
-                </div>
-            </form>
+            {% endfor %}
+        </div>
+        
+        <div class="navigation-buttons">
+            {% if pillar_name == 'passion' %}
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+                <a href="{{ url_for('pillar', pillar_name='mission') }}" class="btn btn-primary next-pillar">Next: What the World Needs</a>
+            {% elif pillar_name == 'mission' %}
+                <a href="{{ url_for('pillar', pillar_name='passion') }}" class="btn btn-secondary">Back: What You Love</a>
+                <a href="{{ url_for('pillar', pillar_name='vocation') }}" class="btn btn-primary next-pillar">Next: What You Are Good At</a>
+            {% elif pillar_name == 'vocation' %}
+                <a href="{{ url_for('pillar', pillar_name='mission') }}" class="btn btn-secondary">Back: What the World Needs</a>
+                <a href="{{ url_for('pillar', pillar_name='profession') }}" class="btn btn-primary next-pillar">Next: What You Can Be Paid For</a>
+            {% elif pillar_name == 'profession' %}
+                <a href="{{ url_for('pillar', pillar_name='vocation') }}" class="btn btn-secondary">Back: What You Are Good At</a>
+                <a href="{{ url_for('ikigai_chart') }}" class="btn btn-primary">View Your Ikigai Chart</a>
+            {% endif %}
         </div>
     </div>
 </section>
@@ -185,164 +54,108 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add answer functionality
-        const addAnswerButtons = document.querySelectorAll('.add-answer-btn');
-        addAnswerButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const answersContainer = this.parentElement;
-                const newInputContainer = document.createElement('div');
-                newInputContainer.className = 'answer-input-container';
-                newInputContainer.innerHTML = `
-                    <input type="text" class="answer-input" placeholder="Enter your answer...">
-                    <button type="button" class="remove-answer-btn">×</button>
-                    <div class="suggestions-container"></div>
-                `;
-                
-                // Insert before the add button
-                answersContainer.insertBefore(newInputContainer, this);
-                
-                // Add event listener for the new input
-                setupInputListeners(newInputContainer.querySelector('.answer-input'));
-            });
-        });
+        // Load saved responses
+        const textareas = document.querySelectorAll('.response-input');
         
-        // Remove answer functionality (delegated)
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('remove-answer-btn')) {
-                e.target.parentElement.remove();
-            }
-        });
-        
-        // Setup input listeners for AI suggestions
-        function setupInputListeners(input) {
-            let typingTimer;
-            const doneTypingInterval = 500;
-            
-            input.addEventListener('input', function() {
-                clearTimeout(typingTimer);
-                
-                const suggestionsContainer = this.nextElementSibling.classList.contains('suggestions-container') 
-                    ? this.nextElementSibling 
-                    : this.parentElement.querySelector('.suggestions-container');
-                
-                if (this.value.length < 3) {
-                    suggestionsContainer.innerHTML = '';
-                    return;
-                }
-                
-                typingTimer = setTimeout(() => {
-                    const pillar = document.getElementById('pillarType').value;
-                    
-                    fetch('/api/suggestions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            text: this.value,
-                            pillar: pillar
-                        }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        suggestionsContainer.innerHTML = '';
-                        
-                        if (data.suggestions && data.suggestions.length > 0) {
-                            data.suggestions.forEach(suggestion => {
-                                const suggestionEl = document.createElement('div');
-                                suggestionEl.className = 'suggestion';
-                                suggestionEl.textContent = suggestion;
-                                suggestionEl.addEventListener('click', () => {
-                                    this.value = suggestion;
-                                    suggestionsContainer.innerHTML = '';
-                                });
-                                suggestionsContainer.appendChild(suggestionEl);
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error getting suggestions:', error);
-                    });
-                }, doneTypingInterval);
-            });
-        }
-        
-        // Setup initial input listeners
-        document.querySelectorAll('.answer-input').forEach(input => {
-            setupInputListeners(input);
-        });
-        
-        // Form submission
-        const pillarForm = document.getElementById('pillarForm');
-        pillarForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const pillar = document.getElementById('pillarType').value;
-            const answersContainers = document.querySelectorAll('.answers-container');
-            
-            let allAnswers = [];
-            
-            answersContainers.forEach(container => {
-                const questionNumber = container.dataset.question;
-                const inputs = container.querySelectorAll('.answer-input');
-                
-                inputs.forEach(input => {
-                    if (input.value.trim()) {
-                        allAnswers.push({
-                            question: questionNumber,
-                            answer: input.value.trim()
-                        });
-                    }
-                });
-            });
-            
-            if (allAnswers.length === 0) {
-                alert('Please provide at least one answer before continuing.');
-                return;
-            }
-            
-            fetch('/save_pillar', {
+        // Function to save response
+        function saveResponse(pillar, questionId, response) {
+            fetch('{{ url_for("save_response") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     pillar: pillar,
-                    answers: allAnswers
-                }),
+                    question_id: questionId,
+                    response: response
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Determine next pillar or go to chart
-                    let nextPage;
-                    
-                    switch(pillar) {
-                        case 'passion':
-                            nextPage = '/pillar/mission';
-                            break;
-                        case 'mission':
-                            nextPage = '/pillar/vocation';
-                            break;
-                        case 'vocation':
-                            nextPage = '/pillar/profession';
-                            break;
-                        case 'profession':
-                            nextPage = '/ikigai_chart';
-                            break;
-                        default:
-                            nextPage = '/';
-                    }
-                    
-                    window.location.href = nextPage;
+                    console.log('Response saved successfully');
                 } else {
-                    alert(data.message || 'There was an error saving your answers. Please try again.');
+                    console.error('Error saving response');
                 }
             })
             .catch(error => {
-                console.error('Error saving pillar data:', error);
-                alert('There was an error saving your answers. Please try again.');
+                console.error('Error:', error);
             });
+        }
+        
+        // Function to get AI suggestions
+        let suggestionTimeout;
+        function getAISuggestions(input, pillar, textarea) {
+            clearTimeout(suggestionTimeout);
+            
+            // Only get suggestions if input is at least 5 characters
+            if (input.length < 5) return;
+            
+            // Wait 500ms after typing stops before requesting suggestions
+            suggestionTimeout = setTimeout(() => {
+                fetch('{{ url_for("get_ai_suggestions") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input: input,
+                        pillar: pillar
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const suggestionsContainer = textarea.closest('.response-area').querySelector('.suggestions-container');
+                        suggestionsContainer.innerHTML = '';
+                        
+                        data.suggestions.forEach(suggestion => {
+                            const suggestionEl = document.createElement('span');
+                            suggestionEl.classList.add('suggestion-tag');
+                            suggestionEl.textContent = suggestion;
+                            
+                            // Add click event to add suggestion to textarea
+                            suggestionEl.addEventListener('click', () => {
+                                textarea.value += (textarea.value.endsWith(' ') ? '' : ' ') + suggestion;
+                                saveResponse(pillar, textarea.dataset.questionId, textarea.value);
+                            });
+                            
+                            suggestionsContainer.appendChild(suggestionEl);
+                        });
+                    } else {
+                        console.error('Error getting suggestions:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }, 500);
+        }
+        
+        // Add event listeners to textareas
+        textareas.forEach(textarea => {
+            // Save response when user types
+            textarea.addEventListener('input', function() {
+                const pillar = this.dataset.pillar;
+                const questionId = this.dataset.questionId;
+                const response = this.value;
+                
+                saveResponse(pillar, questionId, response);
+                
+                // Get AI suggestions
+                getAISuggestions(response, pillar, this);
+            });
+            
+            // Load saved response
+            const pillar = textarea.dataset.pillar;
+            const questionId = textarea.dataset.questionId;
+            
+            // In a real app, we would fetch saved responses from the server here
+            // For now, we'll just use localStorage as a placeholder
+            const savedResponse = localStorage.getItem(`${pillar}_${questionId}`);
+            if (savedResponse) {
+                textarea.value = savedResponse;
+            }
         });
     });
 </script>
