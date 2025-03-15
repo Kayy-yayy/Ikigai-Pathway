@@ -1,4 +1,0 @@
-# Netlify redirects file
-# You'll need to update this URL after deploying your FastAPI backend
-/api/*  https://ikigai-pathway-mdc5rmpa9-kajal-singhs-projects-af863abc.vercel.app/api/:splat  200
-/*      /index.html                              200

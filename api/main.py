@@ -167,12 +167,21 @@ async def get_workplace_tips(request: WorkplaceTipsRequest):
         return {"success": False, "message": str(e)}
 
 # Import and include Ikigai routes
-from routes.ikigai_fastapi import router as ikigai_router
-app.include_router(ikigai_router, prefix="/api/ikigai")
+try:
+    from routes.ikigai_fastapi import router as ikigai_router
+    app.include_router(ikigai_router, prefix="/api/ikigai")
+except ImportError:
+    print("Warning: ikigai_fastapi router not found")
 
 # Import and include Auth routes
-from routes.auth_fastapi import router as auth_router
-app.include_router(auth_router, prefix="/api/auth")
+try:
+    from routes.auth_fastapi import router as auth_router
+    app.include_router(auth_router, prefix="/api/auth")
+except ImportError:
+    print("Warning: auth_fastapi router not found")
+
+# For Vercel serverless deployment
+app_handler = app
 
 if __name__ == "__main__":
     import uvicorn
