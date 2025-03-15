@@ -1,0 +1,22 @@
+[build]
+  base = "frontend/"
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# You'll need to update this URL after deploying your FastAPI backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://ikigai-pathway-mdc5rmpa9-kajal-singhs-projects-af863abc.vercel.app/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
