@@ -93,11 +93,3 @@ This application is configured for deployment on Vercel:
 2. Connect the repository to Vercel
 3. Configure the environment variables in Vercel
 4. Deploy the application
-
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
