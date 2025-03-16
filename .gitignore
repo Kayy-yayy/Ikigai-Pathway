@@ -1,5 +1,6 @@
 # Dependencies
-/node_modules
+node_modules/
+frontend/node_modules/
 /.pnp
 .pnp.js
 
@@ -7,12 +8,15 @@
 /coverage
 
 # Next.js
-/.next/
+.next/
+frontend/.next/
 /out/
 
 # Production
 /build
 /dist
+build/
+dist/
 
 # Misc
 .DS_Store
@@ -24,8 +28,14 @@ yarn-debug.log*
 yarn-error.log*
 
 # Local env files
-.env*.local
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+frontend/.env
+frontend/.env.local
+api/.env
 
 # Vercel
 .vercel
@@ -55,11 +65,17 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+api/__pycache__/
+api/*.py[cod]
+api/*$py.class
 
 # Virtual Environment
 venv/
 ENV/
 env/
+api/venv/
+api/ENV/
+api/env/
 
 # IDE
 .idea/
@@ -67,6 +83,11 @@ env/
 *.swp
 *.swo
 
-# Supabase
-supabase/.branches/
-supabase/.temp/
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
