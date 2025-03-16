@@ -13,7 +13,7 @@ const missionQuestions = [
   },
   {
     id: 'mission-2',
-    text: 'How would you like to make a difference in other people's lives?',
+    text: "How would you like to make a difference in other people's lives?",
   },
   {
     id: 'mission-3',
