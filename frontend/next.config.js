@@ -2,21 +2,15 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost'],
-    unoptimized: process.env.NODE_ENV === 'production',
+    domains: ['localhost', 'your-supabase-project.supabase.co'],
   },
   async rewrites() {
-    // In development, we'll proxy to localhost:5000
-    // In production on Vercel, this will be handled by Vercel's routing
-    if (process.env.NODE_ENV !== 'production') {
-      return [
-        {
-          source: '/api/:path*',
-          destination: 'http://localhost:5000/api/:path*',
-        },
-      ];
-    }
-    return [];
+    return [
+      {
+        source: '/api/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL + '/:path*',
+      },
+    ];
   },
 };
 

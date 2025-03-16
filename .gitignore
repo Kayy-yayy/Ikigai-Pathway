@@ -1,9 +1,38 @@
-# Node.js dependencies
-node_modules/
-.next/
-out/
-build/
-dist/
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Next.js
+/.next/
+/out/
+
+# Production
+/build
+/dist
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+.env
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
 # Python
 __pycache__/
@@ -12,33 +41,32 @@ __pycache__/
 *.so
 .Python
 env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
 venv/
 ENV/
-env.bak/
-venv.bak/
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+env/
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Editor directories and files
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-.DS_Store
 
-# Testing
-coverage/
-.nyc_output/
-
-# Misc
-.DS_Store
+# Supabase
+supabase/.branches/
+supabase/.temp/

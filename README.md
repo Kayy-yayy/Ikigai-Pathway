@@ -1,148 +1,103 @@
 # Ikigai Pathway
 
-A calming, visually engaging web application that guides users through a self-discovery journey to find their ikigai (life purpose) using AI-guidance. The experience mimics a mindful walk through a Zen garden, blending traditional Japanese aesthetics with playful interactivity.
+A calming, visually engaging web application that guides users through a self-discovery journey to find their ikigai (life purpose) using AI-guidance.
 
-## Tech Stack
+## Core Vision
 
-- **Frontend**: Next.js with Tailwind CSS
-- **Backend API**: FastAPI (Python)
-- **Database & Authentication**: Supabase
-- **AI Integration**: Google Gemini API
-- **Deployment**: Netlify (Frontend), Vercel/Heroku/Railway (Backend)
+The experience mimics a mindful walk through a Zen garden, blending traditional Japanese aesthetics with playful interactivity, leaving users with clarity, actionable insights, and a downloadable ikigai chart, personalized workplace growth tips, and a sense of calm empowerment.
 
 ## Features
 
-- **User Authentication**: Sign up with email and avatar selection
-- **Ikigai Journey**: Four interactive pillar modules with AI-powered suggestions
-- **Dynamic Visualization**: Interactive Ikigai chart generation
-- **Personalized Insights**: AI-generated workplace growth tips
-- **Japanese-Inspired Design**: Calming aesthetic with traditional elements
+- **User Authentication**: Sign up/login with email, username, and avatar selection
+- **Interactive Journey**: Guided exploration of the four ikigai pillars
+- **AI-Powered Suggestions**: Smart recommendations using Google Gemini API
+- **Personalized Ikigai Chart**: Dynamic Venn diagram visualization
+- **Downloadable Resources**: High-resolution PNG/PDF of your ikigai chart
+- **Workplace Growth Tips**: Actionable insights based on your ikigai profile
 
-## Project Structure
+## Tech Stack
 
-```
-Ikigai-Pathway/
-├── frontend/               # Next.js frontend application
-│   ├── components/         # Reusable React components
-│   ├── pages/              # Next.js pages
-│   ├── public/             # Static assets
-│   └── styles/             # CSS and Tailwind styles
-├── api/                    # FastAPI backend API
-│   ├── routes/             # API route definitions
-│   ├── main.py             # FastAPI application entry point
-│   └── utils/              # Utility functions
-└── assets/                 # Shared assets
-```
+- **Frontend**: Next.js with TypeScript and Tailwind CSS
+- **Backend**: FastAPI (Python)
+- **Database & Authentication**: Supabase
+- **Deployment**: Vercel
 
-## Setup Instructions
+## Getting Started
 
 ### Prerequisites
 
-- Node.js and npm (for Next.js frontend)
-- Python 3.8+ (for FastAPI backend)
+- Node.js (v14 or higher)
+- Python 3.8+
 - Supabase account
 - Google Gemini API key
 
-### Environment Setup
+### Installation
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/Ikigai-Pathway.git
-   cd Ikigai-Pathway
+   git clone https://github.com/yourusername/ikigai-pathway.git
+   cd ikigai-pathway
    ```
 
-2. Create environment variables:
-   - Copy `.env.example` to `.env` in the root directory
-   - Fill in your Supabase and Gemini API credentials
-
-### Frontend Setup
-
-1. Install dependencies:
+2. Install frontend dependencies:
    ```
    cd frontend
    npm install
    ```
 
-2. Run the development server:
+3. Install backend dependencies:
    ```
-   npm run dev
-   ```
-
-3. The frontend will be available at `http://localhost:3000`
-
-### Backend Setup
-
-1. Create a virtual environment and activate it:
-   ```
-   cd api
-   python -m venv venv
-   # On Windows
-   venv\Scripts\activate
-   # On macOS/Linux
-   source venv/bin/activate
-   ```
-
-2. Install dependencies:
-   ```
+   cd ../api
    pip install -r requirements.txt
    ```
 
-3. Run the FastAPI server with Uvicorn:
-   ```
-   uvicorn main:app --host 0.0.0.0 --port 5000 --reload
-   ```
+4. Set up environment variables:
+   - Create `.env.local` in the frontend directory with:
+     ```
+     NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+     NEXT_PUBLIC_API_URL=http://localhost:8000
+     ```
+   - Create `.env` in the api directory with:
+     ```
+     SUPABASE_URL=your_supabase_url
+     SUPABASE_KEY=your_supabase_anon_key
+     GEMINI_API_KEY=your_gemini_api_key
+     ```
 
-4. The API will be available at `http://localhost:5000`
-5. Interactive API documentation is available at `http://localhost:5000/docs`
+5. Set up Supabase:
+   - Create tables using the SQL in `supabase_setup.sql`
+   - Configure authentication providers and RLS policies
 
-## Supabase Setup
+6. Run the development servers:
+   - Frontend: `npm run dev` in the frontend directory
+   - Backend: `uvicorn main:app --reload` in the api directory
 
-1. Create a new Supabase project
-2. Set up the following tables:
+## Project Structure
 
-### ikigai_responses Table
-```sql
-CREATE TABLE ikigai_responses (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES auth.users(id) NOT NULL,
-  pillar TEXT NOT NULL,
-  question_id INTEGER NOT NULL,
-  response TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id, pillar, question_id)
-);
-
--- Enable RLS
-ALTER TABLE ikigai_responses ENABLE ROW LEVEL SECURITY;
-
--- Create policy
-CREATE POLICY "Users can only access their own responses"
-  ON ikigai_responses
-  FOR ALL
-  USING (auth.uid() = user_id);
-```
+- `frontend/`: Next.js application with TypeScript and Tailwind CSS
+  - `src/pages/`: Application pages including pillar modules
+  - `src/components/`: Reusable UI components
+  - `src/context/`: React context providers
+  - `src/styles/`: Global CSS and Tailwind configuration
+- `api/`: FastAPI backend
+  - `main.py`: Application entry point
+  - `routers/`: API route handlers
+- `assets/`: Images and sounds for the application
 
 ## Deployment
 
-### Frontend (Netlify)
+This application is configured for deployment on Vercel:
 
-1. Connect your GitHub repository to Netlify
-2. Configure the build settings:
-   - Build command: `cd frontend && npm install && npm run build`
-   - Publish directory: `frontend/.next`
-3. Add environment variables in the Netlify dashboard
+1. Push the repository to GitHub
+2. Connect the repository to Vercel
+3. Configure the environment variables in Vercel
+4. Deploy the application
 
-### Backend (Heroku/Railway/Vercel)
+## Contributing
 
-1. Deploy the FastAPI API to your preferred platform
-2. Set the environment variables
-3. Update the API URL in the frontend configuration
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
 
-MIT
-
-## Acknowledgements
-
-- Inspired by the Japanese concept of Ikigai
-- Built with love and mindfulness
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

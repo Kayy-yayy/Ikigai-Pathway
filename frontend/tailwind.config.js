@@ -1,25 +1,27 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
-        'sakura-pink': '#F6CECE',
-        'bamboo-green': '#7BA17D',
-        'indigo-blue': '#3F4B83',
-        'sumi-black': '#2A2A2A',
-        'accent-gold': '#D4AF37',
+        sakura: '#F6CECE',
+        bamboo: '#7BA17D',
+        indigo: '#3F4B83',
+        sumi: '#2A2A2A',
+        softWhite: '#F9F5F0',
+        gold: '#D4AF37',
       },
       fontFamily: {
-        'noto-serif': ['"Noto Serif JP"', 'serif'],
-        'sawarabi': ['"Sawarabi Mincho"', 'sans-serif'],
+        noto: ['"Noto Serif JP"', 'serif'],
+        sawarabi: ['"Sawarabi Mincho"', 'sans-serif'],
+        hina: ['"Hina Mincho"', 'cursive'],
       },
       backgroundImage: {
-        'zen-garden': "url('/images/zen-garden-bg.jpg')",
+        'zen-garden': "url('/images/zen_garden_bg.jpg')",
       },
     },
   },
