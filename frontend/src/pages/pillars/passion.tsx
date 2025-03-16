@@ -13,7 +13,7 @@ const passionQuestions = [
   },
   {
     id: 'passion-2',
-    text: 'What would you do even if you weren't paid for it?',
+    text: "What would you do even if you weren't paid for it?",
   },
   {
     id: 'passion-3',
