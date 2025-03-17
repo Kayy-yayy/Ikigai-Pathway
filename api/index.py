@@ -3,12 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 from mangum import Mangum
+import sys
 
-# Import main app
-from main import app as main_app
+# Add the current directory to the path so that local modules can be imported
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Create handler for AWS Lambda / Vercel serverless function
-handler = Mangum(main_app)
+# Import from the main app
+from api.main import app
 
-# This is required for Vercel serverless deployment
-app = main_app
+# Create handler for Vercel serverless function
+handler = Mangum(app)
