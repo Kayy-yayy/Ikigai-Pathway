@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "api": {
+      "runtime": "python3.9",
+      "handler": "serverless.handler",
+      "memory": 1024
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api"
+    }
+  ]
+}
