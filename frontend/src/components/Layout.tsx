@@ -3,8 +3,6 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useUser } from '../context/UserContext';
-import AvatarTutorial from './AvatarTutorial';
 
 type LayoutProps = {
   children: ReactNode;
@@ -12,7 +10,6 @@ type LayoutProps = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) => {
-  const { user } = useUser();
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -95,16 +92,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
       <header className="bg-sumi text-softWhite p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            {user && user.avatar_url && (
-              <div className="relative h-10 w-10 rounded-full overflow-hidden">
-                <Image 
-                  src={user.avatar_url} 
-                  alt={user.username || 'User avatar'} 
-                  layout="fill"
-                  objectFit="cover"
-                />
-              </div>
-            )}
             <Link href="/" className="font-noto text-2xl font-bold text-sakura hover:text-gold transition duration-300">
               Ikigai Pathway
             </Link>
@@ -151,9 +138,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
         <source src="/sounds/zen_background.mp3" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
-      
-      {/* Avatar Tutorial */}
-      <AvatarTutorial onComplete={() => router.push('/pillars/passion')} />
     </div>
   );
 };

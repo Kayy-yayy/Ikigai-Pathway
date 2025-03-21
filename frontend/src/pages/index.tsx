@@ -1,42 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
-import AuthModal from '../components/AuthModal';
-import { useUser } from '../context/UserContext';
 
 export default function Home() {
-  const { user, loading } = useUser();
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const router = useRouter();
 
-  // Show auth modal on first visit if user is not logged in
-  useEffect(() => {
-    if (!loading) {
-      // Only show the auth modal on first visit if user is not logged in
-      // and we're not in the middle of an auth flow
-      const hasVisited = localStorage.getItem('hasVisitedBefore');
-      if (!hasVisited && !user) {
-        setShowAuthModal(true);
-        localStorage.setItem('hasVisitedBefore', 'true');
-      }
-    }
-  }, [user, loading]);
-
-  // This effect handles auth state changes
-  useEffect(() => {
-    // If user becomes logged in and auth modal is open, close it
-    if (user && showAuthModal) {
-      setShowAuthModal(false);
-    }
-  }, [user, showAuthModal]);
-
   const handleBeginJourney = () => {
-    if (!user) {
-      setShowAuthModal(true);
-    } else {
-      // Redirect to the first pillar page
-      router.push('/pillars/passion');
-    }
+    // Direct navigation to the first pillar page without authentication
+    router.push('/pillars/passion');
   };
 
   return (
@@ -69,12 +40,6 @@ export default function Home() {
           </button>
         </div>
       </div>
-
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
-      />
     </Layout>
   );
 }
