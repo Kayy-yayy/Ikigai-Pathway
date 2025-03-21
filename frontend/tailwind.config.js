@@ -10,6 +10,7 @@ module.exports = {
       colors: {
         sakura: '#F6CECE',
         bamboo: '#7BA17D',
+        'bamboo-dark': '#5A8A5C',
         indigo: '#3F4B83',
         sumi: '#2A2A2A',
         softWhite: '#F9F5F0',

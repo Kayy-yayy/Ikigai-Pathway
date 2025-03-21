@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useUser } from '../context/UserContext';
 
@@ -16,6 +16,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [avatarId, setAvatarId] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [allFieldsFilled, setAllFieldsFilled] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Available avatars
   const avatars = [
@@ -32,7 +34,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setUsername('');
     setAvatarId('');
     setError('');
+    setAllFieldsFilled(false);
   }, [isOpen, isSignUp]);
+
+  // Check if all fields are filled for sign up
+  useEffect(() => {
+    if (isSignUp) {
+      setAllFieldsFilled(!!email && !!password && !!username && !!avatarId);
+    } else {
+      setAllFieldsFilled(!!email && !!password);
+    }
+  }, [email, password, username, avatarId, isSignUp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,11 +76,25 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Check if the click was outside the modal content
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-sumi bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-softWhite rounded-lg shadow-xl max-w-md w-full p-6 relative">
+    <div 
+      className="fixed inset-0 bg-sumi bg-opacity-75 flex items-center justify-center z-50"
+      onClick={handleOutsideClick}
+    >
+      <div 
+        ref={modalRef}
+        className="bg-softWhite rounded-lg shadow-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-sumi hover:text-indigo"
@@ -138,28 +164,30 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <label className="block font-sawarabi text-sumi mb-2">
                   Choose Your Avatar
                 </label>
-                <div className="grid grid-cols-2 gap-4">
-                  {avatars.map((avatar) => (
-                    <div
-                      key={avatar.id}
-                      className={`border-2 rounded-lg p-2 cursor-pointer transition-all ${
-                        avatarId === avatar.id
-                          ? 'border-indigo bg-indigo bg-opacity-10'
-                          : 'border-gray-200 hover:border-indigo'
-                      }`}
-                      onClick={() => setAvatarId(avatar.id)}
-                    >
-                      <div className="relative h-24 w-full mb-2">
-                        <Image
-                          src={`/images/avatar images/${avatar.id}.jpg`}
-                          alt={avatar.name}
-                          layout="fill"
-                          objectFit="contain"
-                        />
+                <div className="overflow-x-auto pb-2">
+                  <div className="flex space-x-4 min-w-max">
+                    {avatars.map((avatar) => (
+                      <div
+                        key={avatar.id}
+                        className={`border-2 rounded-lg p-2 cursor-pointer transition-all flex-shrink-0 w-32 ${
+                          avatarId === avatar.id
+                            ? 'border-indigo bg-indigo bg-opacity-10'
+                            : 'border-gray-200 hover:border-indigo'
+                        }`}
+                        onClick={() => setAvatarId(avatar.id)}
+                      >
+                        <div className="relative h-24 w-full mb-2">
+                          <Image
+                            src={`/images/avatar images/${avatar.id}.jpg`}
+                            alt={avatar.name}
+                            layout="fill"
+                            objectFit="contain"
+                          />
+                        </div>
+                        <p className="text-center font-sawarabi text-sm">{avatar.name}</p>
                       </div>
-                      <p className="text-center font-sawarabi text-sm">{avatar.name}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </>
@@ -167,8 +195,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-bamboo hover:bg-opacity-90 text-white font-sawarabi py-2 px-4 rounded-md transition duration-300 mt-2"
+            disabled={loading || !allFieldsFilled}
+            className={`w-full font-sawarabi py-2 px-4 rounded-md transition duration-300 mt-4 ${
+              allFieldsFilled 
+                ? 'bg-bamboo hover:bg-bamboo-dark text-white transform hover:scale-105' 
+                : 'bg-gray-400 text-white cursor-not-allowed'
+            }`}
           >
             {loading
               ? 'Loading...'

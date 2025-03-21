@@ -19,28 +19,28 @@ export default function About() {
             It represents the intersection of four fundamental elements that create meaning and purpose in one's life.
           </p>
           
-          <div className="relative w-full h-64 md:h-80 mb-6">
+          <div className="relative w-full h-96 md:h-[500px] my-12">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-4/5 h-4/5">
-                <svg viewBox="0 0 400 400" className="w-full h-full">
+              <div className="w-full max-w-[600px] h-full max-h-[500px]">
+                <svg viewBox="0 0 500 500" className="w-full h-full">
                   {/* Passion Circle (What you love) */}
-                  <circle cx="200" cy="150" r="100" fill="#F6CECE" fillOpacity="0.7" />
-                  <text x="200" y="150" textAnchor="middle" className="font-noto text-sm">What you LOVE</text>
+                  <circle cx="250" cy="175" r="125" fill="#F6CECE" fillOpacity="0.7" />
+                  <text x="250" y="110" textAnchor="middle" className="font-noto text-base md:text-lg font-semibold">What you LOVE</text>
                   
                   {/* Profession Circle (What you're good at) */}
-                  <circle cx="250" cy="200" r="100" fill="#7BA17D" fillOpacity="0.7" />
-                  <text x="250" y="200" textAnchor="middle" className="font-noto text-sm">What you're GOOD AT</text>
+                  <circle cx="325" cy="250" r="125" fill="#7BA17D" fillOpacity="0.7" />
+                  <text x="370" y="250" textAnchor="middle" className="font-noto text-base md:text-lg font-semibold">What you're GOOD AT</text>
                   
                   {/* Mission Circle (What the world needs) */}
-                  <circle cx="150" cy="200" r="100" fill="#3F4B83" fillOpacity="0.7" />
-                  <text x="150" y="200" textAnchor="middle" className="font-noto text-sm" fill="white">What the world NEEDS</text>
+                  <circle cx="175" cy="250" r="125" fill="#3F4B83" fillOpacity="0.7" />
+                  <text x="130" y="250" textAnchor="middle" className="font-noto text-base md:text-lg font-semibold" fill="white">What the world NEEDS</text>
                   
                   {/* Vocation Circle (What you can be paid for) */}
-                  <circle cx="200" cy="250" r="100" fill="#D4AF37" fillOpacity="0.7" />
-                  <text x="200" y="250" textAnchor="middle" className="font-noto text-sm">What you can be PAID FOR</text>
+                  <circle cx="250" cy="325" r="125" fill="#D4AF37" fillOpacity="0.7" />
+                  <text x="250" y="390" textAnchor="middle" className="font-noto text-base md:text-lg font-semibold">What you can be PAID FOR</text>
                   
                   {/* Center - Ikigai */}
-                  <text x="200" y="200" textAnchor="middle" className="font-noto text-lg font-bold">IKIGAI</text>
+                  <text x="250" y="250" textAnchor="middle" className="font-noto text-2xl md:text-3xl font-bold">IKIGAI</text>
                 </svg>
               </div>
             </div>

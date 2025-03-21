@@ -155,8 +155,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to sign up');
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Failed to sign up');
+        } else {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Failed to sign up');
+        }
       }
       
       const data = await response.json();
