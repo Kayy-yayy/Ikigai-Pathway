@@ -9,7 +9,7 @@ type AuthModalProps = {
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const { signIn, signUp } = useUser();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -213,27 +213,38 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             className={`w-full font-sawarabi py-2 px-4 rounded-md transition duration-300 mt-4 ${
               allFieldsFilled 
                 ? 'bg-bamboo hover:bg-bamboo-dark text-white transform hover:scale-105' 
-                : 'bg-gray-400 text-white cursor-not-allowed'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {loading
-              ? 'Loading...'
-              : isSignUp
-              ? 'Create Account'
-              : 'Sign In'}
+            {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
           </button>
+          
+          <div className="text-center mt-4">
+            {isSignUp ? (
+              <p className="text-sumi font-sawarabi">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(false)}
+                  className="text-indigo hover:text-indigo-dark font-medium"
+                >
+                  Sign In
+                </button>
+              </p>
+            ) : (
+              <p className="text-sumi font-sawarabi">
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(true)}
+                  className="text-indigo hover:text-indigo-dark font-medium"
+                >
+                  Sign Up
+                </button>
+              </p>
+            )}
+          </div>
         </form>
-
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-indigo hover:text-bamboo font-sawarabi text-sm"
-          >
-            {isSignUp
-              ? 'Already have an account? Sign in'
-              : "Don't have an account? Sign up"}
-          </button>
-        </div>
       </div>
     </div>
   );
