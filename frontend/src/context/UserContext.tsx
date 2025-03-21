@@ -140,11 +140,22 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setLoading(true);
       
-      // Direct Supabase authentication approach instead of using our API endpoint
-      // This avoids the serverless function issues on Vercel
+      // Validate required fields
+      if (!email || !password || !username || !avatarId) {
+        throw new Error('All fields are required');
+      }
+      
+      // Step 1: Sign up the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username: username,
+            avatar_id: avatarId,
+            avatar_url: `/images/avatar images/${avatarId}.jpg`
+          }
+        }
       });
       
       if (authError) {
@@ -155,30 +166,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error('Failed to create user account');
       }
       
-      // Create profile in the profiles table
-      const avatarUrl = `/images/avatar images/${avatarId}.jpg`;
-      
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email,
-          username,
-          avatar_url: avatarUrl,
-          avatar_id: avatarId
-        });
-      
-      if (profileError) {
-        // If profile creation fails, we should log the error
-        // We don't delete the auth user here as it complicates the flow
-        console.error('Error creating profile:', profileError);
-        throw new Error(profileError.message || 'Failed to create user profile');
-      }
-      
-      // Set the user in state
+      // If we have a session, the user is automatically signed in
       if (authData.session) {
-        // Fetch the user profile
-        await fetchProfile(authData.user.id);
+        // The auth state change listener will handle setting the user
+        // We don't need to do anything else here
       } else {
         // If no session, user might need to verify email first
         throw new Error('Account created! Please check your email to verify your account before signing in.');
