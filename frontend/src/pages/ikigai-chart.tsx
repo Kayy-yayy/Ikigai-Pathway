@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import Layout from '../components/Layout';
-import { useUser } from '../context/UserContext';
-import AuthModal from '../components/AuthModal';
+import Layout from '@/components/Layout';
+import { useUser } from '@/context/UserContext';
+import AuthModal from '@/components/AuthModal';
 
 export default function IkigaiChart() {
   const { user, loading } = useUser();
@@ -16,9 +16,24 @@ export default function IkigaiChart() {
   const chartRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
+  // Check if user is authenticated and has completed questions
+  useEffect(() => {
+    if (loading) return;
+    
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    
+    // Redirect if user hasn't completed their questions
+    if (!user.has_completed_questions) {
+      router.push('/pillars/passion');
+    }
+  }, [user, loading, router]);
+
   // Load user responses and generate chart data
   useEffect(() => {
-    if (!user) return;
+    if (!user || !user.has_completed_questions) return;
 
     const fetchResponses = async () => {
       try {
@@ -141,7 +156,7 @@ export default function IkigaiChart() {
   // If loading, show loading spinner
   if (loading || isLoading) {
     return (
-      <Layout title="Your Ikigai Chart">
+      <Layout>
         <div className="flex justify-center items-center h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo"></div>
         </div>
@@ -152,7 +167,7 @@ export default function IkigaiChart() {
   // If not logged in, show auth modal
   if (!user) {
     return (
-      <Layout title="Your Ikigai Chart">
+      <Layout>
         <div className="container mx-auto px-4 py-12 max-w-3xl text-center">
           <h1 className="font-noto text-3xl text-indigo mb-6">
             Your Ikigai Chart
@@ -168,8 +183,6 @@ export default function IkigaiChart() {
           >
             Sign In / Sign Up
           </button>
-          
-          <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
       </Layout>
     );
@@ -178,7 +191,7 @@ export default function IkigaiChart() {
   // If no chart data, show empty state
   if (!chartData) {
     return (
-      <Layout title="Your Ikigai Chart">
+      <Layout>
         <div className="container mx-auto px-4 py-12 max-w-3xl text-center">
           <h1 className="font-noto text-3xl text-indigo mb-6">
             Your Ikigai Chart
@@ -203,7 +216,7 @@ export default function IkigaiChart() {
   }
 
   return (
-    <Layout title="Your Ikigai Chart">
+    <Layout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <h1 className="font-noto text-3xl text-indigo text-center mb-6">
           Your Ikigai Chart
@@ -291,7 +304,7 @@ export default function IkigaiChart() {
                   <div className="text-center">
                     <h2 className="font-noto text-xl md:text-2xl font-bold text-sumi">IKIGAI</h2>
                     <p className="font-sawarabi text-xs md:text-sm text-gray-600">Your Purpose</p>
-                    <p className="font-hina text-xs md:text-sm text-indigo mt-2">{user.username}</p>
+                    <p className="font-hina text-xs md:text-sm text-indigo mt-2">{user.email}</p>
                   </div>
                 </div>
               </div>

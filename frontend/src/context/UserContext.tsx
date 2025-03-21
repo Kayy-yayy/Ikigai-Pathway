@@ -1,13 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 
 // Define types
 export type UserProfile = {
   id: string;
   email: string;
-  avatar_id: string | null;
-  avatar_url: string | null;
+  username?: string;
+  avatar_id?: string;
+  avatar_url?: string;
   created_at?: string;
+  has_completed_questions?: boolean;
 };
 
 export type UserContextType = {
@@ -15,7 +17,8 @@ export type UserContextType = {
   loading: boolean;
   signInWithEmail: (email: string) => Promise<{ success: boolean; message: string }>;
   verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; message: string }>;
-  updateAvatar: (avatarId: string) => Promise<{ success: boolean; message: string }>;
+  updateAvatar: (avatarId: string, username?: string) => Promise<{ success: boolean; message: string }>;
+  updateQuestionCompletion: (completed: boolean) => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
   needsAvatarSelection: boolean;
   setNeedsAvatarSelection: (value: boolean) => void;
@@ -42,108 +45,94 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  // Check for existing session on load
+  // Initialize user session
   useEffect(() => {
-    if (!supabase) return;
-
-    const checkSession = async () => {
+    const initializeUser = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        setLoading(true);
         
-        if (error) {
-          console.error('Error checking session:', error);
-          setLoading(false);
-          return;
-        }
+        // Check for existing session
+        const sessionResponse = await supabase?.auth.getSession();
+        const session = sessionResponse?.data?.session;
         
-        if (session) {
-          const { user: authUser } = session;
-          
-          // Get user profile
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', authUser.id)
-            .single();
-          
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('Error fetching profile:', profileError);
-          }
-          
-          // Check if user has an avatar
-          const hasAvatar = profile?.avatar_id || authUser.user_metadata?.avatar_id;
-          
-          // If no avatar, set flag to show avatar selection
-          if (!hasAvatar) {
-            setNeedsAvatarSelection(true);
-          }
-          
-          // Set user data
-          setUser({
-            id: authUser.id,
-            email: authUser.email || '',
-            avatar_id: profile?.avatar_id || authUser.user_metadata?.avatar_id || null,
-            avatar_url: profile?.avatar_url || authUser.user_metadata?.avatar_url || null,
-            created_at: profile?.created_at || authUser.created_at
-          });
+        if (session?.user) {
+          await updateUserState(session.user);
         }
       } catch (error) {
-        console.error('Session check error:', error);
+        console.error('Error initializing user:', error);
       } finally {
         setLoading(false);
       }
     };
-    
-    // Check session immediately
-    checkSession();
-    
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+
+    initializeUser();
+
+    // Subscribe to auth changes
+    const authListener = supabase?.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          const { user: authUser } = session;
-          
-          // Get user profile
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', authUser.id)
-            .single();
-          
-          if (profileError && profileError.code !== 'PGRST116') {
-            console.error('Error fetching profile:', profileError);
-          }
-          
-          // Check if user has an avatar
-          const hasAvatar = profile?.avatar_id || authUser.user_metadata?.avatar_id;
-          
-          // If no avatar, set flag to show avatar selection
-          if (!hasAvatar) {
-            setNeedsAvatarSelection(true);
-          }
-          
-          // Set user data
-          setUser({
-            id: authUser.id,
-            email: authUser.email || '',
-            avatar_id: profile?.avatar_id || authUser.user_metadata?.avatar_id || null,
-            avatar_url: profile?.avatar_url || authUser.user_metadata?.avatar_url || null,
-            created_at: profile?.created_at || authUser.created_at
-          });
-        } else if (event === 'SIGNED_OUT') {
+        if (session?.user) {
+          await updateUserState(session.user);
+        } else {
           setUser(null);
           setNeedsAvatarSelection(false);
         }
       }
     );
-    
-    // Cleanup subscription
+
     return () => {
-      subscription.unsubscribe();
+      if (authListener) {
+        authListener.data.subscription.unsubscribe();
+      }
     };
   }, [supabase]);
 
-  // Sign in with email (sends OTP)
+  // Update user state with profile data
+  const updateUserState = async (authUser: User) => {
+    try {
+      // Get user profile from profiles table
+      const profileResponse = await supabase
+        ?.from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (profileResponse?.error) {
+        throw profileResponse.error;
+      }
+
+      const profile = profileResponse?.data;
+
+      // Create user profile object
+      const userProfile: UserProfile = {
+        id: authUser.id,
+        email: authUser.email || '',
+        username: profile?.username || '',
+        avatar_id: profile?.avatar_id || '',
+        avatar_url: profile?.avatar_url || '',
+        created_at: profile?.created_at || authUser.created_at,
+        has_completed_questions: profile?.has_completed_questions || false
+      };
+
+      setUser(userProfile);
+      
+      // Check if user needs to select an avatar
+      setNeedsAvatarSelection(!profile?.avatar_id);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      
+      // If we can't get the profile, still set the basic user info
+      setUser({
+        id: authUser.id,
+        email: authUser.email || '',
+        has_completed_questions: false
+      });
+      
+      // Assume they need to select an avatar
+      setNeedsAvatarSelection(true);
+    }
+  };
+
+  // Sign in with email (passwordless)
   const signInWithEmail = async (email: string) => {
     if (!supabase) return { success: false, message: 'Supabase client not initialized' };
     
@@ -237,7 +226,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Update avatar
-  const updateAvatar = async (avatarId: string) => {
+  const updateAvatar = async (avatarId: string, username?: string) => {
     if (!supabase || !user) return { success: false, message: 'Not authenticated' };
     
     try {
@@ -245,9 +234,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       // Update user metadata
       const { error: updateError } = await supabase.auth.updateUser({
-        data: {
+        data: { 
           avatar_id: avatarId,
-          avatar_url: `/images/avatar images/${avatarId}.jpg`
+          ...(username ? { username } : {})
         }
       });
       
@@ -262,7 +251,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           id: user.id,
           avatar_id: avatarId,
           avatar_url: `/images/avatar images/${avatarId}.jpg`,
-          email: user.email
+          email: user.email,
+          ...(username ? { username } : {})
         });
       
       if (profileError) {
@@ -270,11 +260,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       
       // Update local user state
-      setUser({
-        ...user,
+      setUser(prev => prev ? {
+        ...prev,
         avatar_id: avatarId,
-        avatar_url: `/images/avatar images/${avatarId}.jpg`
-      });
+        avatar_url: `/images/avatar images/${avatarId}.jpg`,
+        ...(username ? { username } : {})
+      } : null);
       
       // Reset the avatar selection flag
       setNeedsAvatarSelection(false);
@@ -285,6 +276,54 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Update question completion status
+  const updateQuestionCompletion = async (completed: boolean) => {
+    if (!supabase || !user) return { success: false, message: 'Not authenticated' };
+    
+    try {
+      // Update user metadata
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { 
+          has_completed_questions: completed
+        }
+      });
+      
+      if (updateError) {
+        throw updateError;
+      }
+      
+      // Update profile in database
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ 
+          has_completed_questions: completed,
+          updated_at: new Date()
+        })
+        .eq('id', user.id);
+      
+      if (profileError) {
+        throw profileError;
+      }
+      
+      // Update local user state
+      setUser(prev => prev ? {
+        ...prev,
+        has_completed_questions: completed
+      } : null);
+      
+      return {
+        success: true,
+        message: 'Question completion status updated'
+      };
+    } catch (error) {
+      console.error('Error updating question completion status:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update question completion status'
+      };
     }
   };
 
@@ -315,9 +354,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     signInWithEmail,
     verifyOtp,
     updateAvatar,
+    updateQuestionCompletion,
     signOut,
     needsAvatarSelection,
-    setNeedsAvatarSelection
+    setNeedsAvatarSelection,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

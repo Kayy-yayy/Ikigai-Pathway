@@ -3,26 +3,32 @@
 
 -- 1. Ensure auth.users can store avatar information
 ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS avatar_id TEXT;
+ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS username TEXT;
+-- Remove avatar_url since we don't want to store it
 ALTER TABLE auth.users DROP COLUMN IF EXISTS avatar_url;
 
 -- 2. Create or update the profiles table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
   email TEXT NOT NULL,
+  username TEXT,
   avatar_id TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  has_completed_questions BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
 -- 3. Create a trigger to automatically create a profile when a new user signs up
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, avatar_id)
+  INSERT INTO public.profiles (id, email, username, avatar_id)
   VALUES (
     NEW.id,
     NEW.email,
+    NEW.raw_user_meta_data->>'username',
     NEW.raw_user_meta_data->>'avatar_id'
+    -- No avatar_url
   );
   RETURN NEW;
 END;

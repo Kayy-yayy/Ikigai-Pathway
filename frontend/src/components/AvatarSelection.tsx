@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useUser } from '../context/UserContext';
@@ -9,12 +9,22 @@ type AvatarSelectionProps = {
 };
 
 const AvatarSelection: React.FC<AvatarSelectionProps> = ({ isOpen, onClose }) => {
-  const { updateAvatar, needsAvatarSelection } = useUser();
+  const { updateAvatar, needsAvatarSelection, user } = useUser();
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
+  
+  // Set default username from email when component mounts
+  useEffect(() => {
+    if (user?.email) {
+      // Extract username from email (part before @)
+      const emailUsername = user.email.split('@')[0];
+      setUsername(user.username || emailUsername);
+    }
+  }, [user]);
   
   // Available avatars
   const avatars = [
@@ -31,7 +41,7 @@ const AvatarSelection: React.FC<AvatarSelectionProps> = ({ isOpen, onClose }) =>
       setLoading(true);
       setError('');
       
-      const result = await updateAvatar(selectedAvatar);
+      const result = await updateAvatar(selectedAvatar, username);
       setSuccessMessage(result.message);
       
       // Redirect after a short delay
@@ -53,7 +63,7 @@ const AvatarSelection: React.FC<AvatarSelectionProps> = ({ isOpen, onClose }) =>
     <div className="fixed inset-0 bg-sumi bg-opacity-75 flex items-center justify-center z-50">
       <div className="bg-softWhite rounded-lg shadow-xl max-w-md w-full p-6 relative">
         <h2 className="text-2xl font-noto text-indigo text-center mb-6">
-          Choose Your Avatar
+          Personalize Your Journey
         </h2>
         
         {error && (
@@ -68,7 +78,25 @@ const AvatarSelection: React.FC<AvatarSelectionProps> = ({ isOpen, onClose }) =>
           </div>
         )}
         
-        <p className="text-sumi mb-6 text-center">
+        <div className="mb-6">
+          <label htmlFor="username" className="block font-sawarabi text-sumi mb-2">
+            Choose a Username
+          </label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo"
+            placeholder="Enter your preferred username"
+            required
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            This is how you'll be identified in your Ikigai journey
+          </p>
+        </div>
+        
+        <p className="text-sumi mb-4 text-center">
           Select an avatar to represent you on your journey to finding your Ikigai.
         </p>
         
@@ -98,9 +126,9 @@ const AvatarSelection: React.FC<AvatarSelectionProps> = ({ isOpen, onClose }) =>
         
         <button
           onClick={handleAvatarSelect}
-          disabled={loading || !selectedAvatar}
+          disabled={loading || !selectedAvatar || !username.trim()}
           className={`w-full font-sawarabi py-2 px-4 rounded-md transition duration-300 ${
-            selectedAvatar && !loading
+            selectedAvatar && username.trim() && !loading
               ? 'bg-bamboo hover:bg-bamboo-dark text-white transform hover:scale-105'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}

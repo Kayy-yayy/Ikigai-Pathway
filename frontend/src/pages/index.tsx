@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   return (
-    <Layout title="Welcome">
+    <Layout>
       <div className="relative min-h-screen">
         {/* Background image */}
         <div 

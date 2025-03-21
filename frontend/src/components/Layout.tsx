@@ -8,22 +8,28 @@ import AvatarSelection from './AvatarSelection';
 
 type LayoutProps = {
   children: ReactNode;
-  title?: string;
 };
 
-const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut, needsAvatarSelection } = useUser();
-  const router = useRouter();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showAvatarSelection, setShowAvatarSelection] = useState(false);
+  const router = useRouter();
 
+  // Close mobile menu when route changes
   useEffect(() => {
-    // Show avatar selection if needed
-    if (needsAvatarSelection) {
+    setIsMobileMenuOpen(false);
+  }, [router.pathname]);
+
+  // Show avatar selection if needed
+  useEffect(() => {
+    if (needsAvatarSelection && user) {
       setShowAvatarSelection(true);
     }
-  }, [needsAvatarSelection]);
+  }, [needsAvatarSelection, user]);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     // Initialize background music
@@ -92,7 +98,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
   return (
     <div className="flex flex-col min-h-screen bg-softWhite">
       <Head>
-        <title>{title ? `${title} | Ikigai Pathway` : 'Ikigai Pathway'}</title>
+        <title>{'Ikigai Pathway'}</title>
         <meta name="description" content="Find your life purpose through the Japanese concept of Ikigai" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -100,25 +106,54 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
         <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&family=Sawarabi+Mincho&family=Hina+Mincho&display=swap" rel="stylesheet" />
       </Head>
 
-      <header className="bg-sumi text-softWhite p-4 shadow-md">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <Link href="/" className="font-noto text-2xl font-bold text-sakura hover:text-gold transition duration-300">
-              Ikigai Pathway
+      <header className="bg-sumi shadow-md">
+        <div className="container mx-auto px-4 py-3">
+          <nav className="flex justify-between items-center">
+            {/* Logo */}
+            <Link href="/">
+              <a className="flex items-center">
+                <div className="relative w-10 h-10 mr-2">
+                  <Image
+                    src="/images/ikigai-logo.png"
+                    alt="Ikigai Pathway Logo"
+                    layout="fill"
+                    objectFit="contain"
+                  />
+                </div>
+                <span className="text-xl font-noto text-gold">Ikigai Pathway</span>
+              </a>
             </Link>
-          </div>
 
-          <nav className="flex items-center space-x-6">
+            {/* Authenticated User Section */}
             {user ? (
               <div className="flex items-center space-x-4">
+                {/* Navigation Links - Desktop */}
+                <div className="hidden md:flex space-x-6">
+                  <Link href="/">
+                    <a className="text-softWhite hover:text-gold transition duration-300">Home</a>
+                  </Link>
+                  <Link href="/pillars/passion">
+                    <a className="text-softWhite hover:text-gold transition duration-300">Pillars</a>
+                  </Link>
+                  {user.has_completed_questions && (
+                    <Link href="/ikigai-chart">
+                      <a className="text-softWhite hover:text-gold transition duration-300">Ikigai Chart</a>
+                    </Link>
+                  )}
+                  <Link href="/about">
+                    <a className="text-softWhite hover:text-gold transition duration-300">About</a>
+                  </Link>
+                </div>
+                
+                {/* User Profile */}
                 <div 
                   className="flex items-center space-x-2 text-softWhite hover:text-gold transition duration-300 cursor-pointer"
                   onClick={() => setShowAvatarSelection(true)}
                 >
-                  {user.avatar_url ? (
+                  {user.avatar_id ? (
                     <div className="relative w-8 h-8 rounded-full overflow-hidden">
                       <Image 
-                        src={user.avatar_url} 
+                        src={`/images/avatar images/${user.avatar_id}.jpg`} 
                         alt="User avatar" 
                         layout="fill" 
                         objectFit="cover"
@@ -129,7 +164,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
                       {user.email ? user.email[0].toUpperCase() : 'U'}
                     </div>
                   )}
-                  <span className="hidden md:inline">{user.email.split('@')[0]}</span>
+                  <span className="hidden md:inline">{user.username || user.email.split('@')[0]}</span>
                 </div>
                 <button 
                   onClick={signOut}
@@ -139,11 +174,89 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
                 </button>
               </div>
             ) : (
-              <Link href="/about" className="font-sawarabi hover:text-gold transition duration-300">
-                About
-              </Link>
+              <div className="flex items-center space-x-4">
+                {/* Non-authenticated Navigation */}
+                <div className="hidden md:flex space-x-6">
+                  <Link href="/">
+                    <a className="text-softWhite hover:text-gold transition duration-300">Home</a>
+                  </Link>
+                  <Link href="/about">
+                    <a className="text-softWhite hover:text-gold transition duration-300">About</a>
+                  </Link>
+                </div>
+              </div>
             )}
             
+            {/* Mobile Menu Button */}
+            <button 
+              className="md:hidden text-softWhite focus:outline-none"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+            
+            {/* Mobile Menu */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden absolute top-16 right-0 w-48 bg-sumi shadow-lg rounded-md py-2 z-50">
+                <Link href="/">
+                  <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
+                    Home
+                  </a>
+                </Link>
+                
+                {user ? (
+                  <>
+                    <Link href="/pillars/passion">
+                      <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
+                        Pillars
+                      </a>
+                    </Link>
+                    {user.has_completed_questions && (
+                      <Link href="/ikigai-chart">
+                        <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
+                          Ikigai Chart
+                        </a>
+                      </Link>
+                    )}
+                  </>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300"
+                  >
+                    Sign In
+                  </button>
+                )}
+                
+                <Link href="/about">
+                  <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
+                    About
+                  </a>
+                </Link>
+                
+                {user && (
+                  <button 
+                    onClick={() => {
+                      signOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300"
+                  >
+                    Sign Out
+                  </button>
+                )}
+              </div>
+            )}
+            
+            {/* Audio Toggle */}
             <button 
               onClick={toggleAudio}
               className="text-softWhite hover:text-gold transition duration-300"
@@ -165,11 +278,24 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
         {children}
       </main>
 
-      <footer className="bg-sumi text-softWhite p-4 mt-auto">
-        <div className="container mx-auto text-center">
-          <p className="font-sawarabi text-sm">
-            &copy; {new Date().getFullYear()} Ikigai Pathway. All rights reserved.
-          </p>
+      <footer className="bg-sumi py-6 text-softWhite">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <p className="font-sawarabi">&copy; {new Date().getFullYear()} Ikigai Pathway</p>
+            </div>
+            <div className="flex space-x-4">
+              <Link href="/about">
+                <a className="hover:text-gold transition duration-300">About</a>
+              </Link>
+              <Link href="/privacy">
+                <a className="hover:text-gold transition duration-300">Privacy Policy</a>
+              </Link>
+              <Link href="/terms">
+                <a className="hover:text-gold transition duration-300">Terms of Service</a>
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
 
