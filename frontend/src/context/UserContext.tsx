@@ -140,41 +140,49 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setLoading(true);
       
-      // Call our API endpoint for signup which handles both auth and profile creation
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          username,
-          avatar_id: avatarId,
-        }),
+      // Direct Supabase authentication approach instead of using our API endpoint
+      // This avoids the serverless function issues on Vercel
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
       });
       
-      if (!response.ok) {
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || 'Failed to sign up');
-        } else {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Failed to sign up');
-        }
+      if (authError) {
+        throw new Error(authError.message || 'Failed to sign up');
       }
       
-      const data = await response.json();
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
+      }
       
-      // Set session in Supabase client
-      await supabase.auth.setSession({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-      });
+      // Create profile in the profiles table
+      const avatarUrl = `/images/avatar images/${avatarId}.jpg`;
       
-      // Fetch the user profile
-      await fetchProfile(data.user_id);
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          email,
+          username,
+          avatar_url: avatarUrl,
+          avatar_id: avatarId
+        });
+      
+      if (profileError) {
+        // If profile creation fails, we should log the error
+        // We don't delete the auth user here as it complicates the flow
+        console.error('Error creating profile:', profileError);
+        throw new Error(profileError.message || 'Failed to create user profile');
+      }
+      
+      // Set the user in state
+      if (authData.session) {
+        // Fetch the user profile
+        await fetchProfile(authData.user.id);
+      } else {
+        // If no session, user might need to verify email first
+        throw new Error('Account created! Please check your email to verify your account before signing in.');
+      }
     } catch (error) {
       console.error('Error signing up:', error);
       throw error;
