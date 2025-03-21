@@ -3,6 +3,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { useUser } from '../context/UserContext';
+import AvatarSelection from './AvatarSelection';
 
 type LayoutProps = {
   children: ReactNode;
@@ -10,9 +12,18 @@ type LayoutProps = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) => {
+  const { user, signOut, needsAvatarSelection } = useUser();
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showAvatarSelection, setShowAvatarSelection] = useState(false);
+
+  useEffect(() => {
+    // Show avatar selection if needed
+    if (needsAvatarSelection) {
+      setShowAvatarSelection(true);
+    }
+  }, [needsAvatarSelection]);
 
   useEffect(() => {
     // Initialize background music
@@ -79,10 +90,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-softWhite">
+    <div className="flex flex-col min-h-screen bg-softWhite">
       <Head>
-        <title>{title} | Ikigai Pathway</title>
-        <meta name="description" content="Find your life purpose with Ikigai Pathway" />
+        <title>{title ? `${title} | Ikigai Pathway` : 'Ikigai Pathway'}</title>
+        <meta name="description" content="Find your life purpose through the Japanese concept of Ikigai" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -98,12 +109,41 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
           </div>
 
           <nav className="flex items-center space-x-6">
-            <Link href="/about" className="font-sawarabi hover:text-gold transition duration-300">
-              About
-            </Link>
-            <Link href="/ikigai-chart" className="font-sawarabi hover:text-gold transition duration-300">
-              Ikigai Chart
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <div 
+                  className="flex items-center space-x-2 text-softWhite hover:text-gold transition duration-300 cursor-pointer"
+                  onClick={() => setShowAvatarSelection(true)}
+                >
+                  {user.avatar_url ? (
+                    <div className="relative w-8 h-8 rounded-full overflow-hidden">
+                      <Image 
+                        src={user.avatar_url} 
+                        alt="User avatar" 
+                        layout="fill" 
+                        objectFit="cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-bamboo flex items-center justify-center text-white">
+                      {user.email ? user.email[0].toUpperCase() : 'U'}
+                    </div>
+                  )}
+                  <span className="hidden md:inline">{user.email.split('@')[0]}</span>
+                </div>
+                <button 
+                  onClick={signOut}
+                  className="text-softWhite hover:text-gold transition duration-300"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link href="/about" className="font-sawarabi hover:text-gold transition duration-300">
+                About
+              </Link>
+            )}
+            
             <button 
               onClick={toggleAudio}
               className="text-softWhite hover:text-gold transition duration-300"
@@ -138,6 +178,12 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
         <source src="/sounds/zen_background.mp3" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
+      
+      {/* Avatar Selection Modal */}
+      <AvatarSelection 
+        isOpen={showAvatarSelection} 
+        onClose={() => setShowAvatarSelection(false)} 
+      />
     </div>
   );
 };
