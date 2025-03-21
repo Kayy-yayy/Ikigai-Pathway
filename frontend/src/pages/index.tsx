@@ -11,15 +11,24 @@ export default function Home() {
 
   // Show auth modal on first visit if user is not logged in
   useEffect(() => {
-    if (!loading && !user) {
-      // Check if this is the first visit
+    if (!loading) {
+      // Only show the auth modal on first visit if user is not logged in
+      // and we're not in the middle of an auth flow
       const hasVisited = localStorage.getItem('hasVisitedBefore');
-      if (!hasVisited) {
+      if (!hasVisited && !user) {
         setShowAuthModal(true);
         localStorage.setItem('hasVisitedBefore', 'true');
       }
     }
   }, [user, loading]);
+
+  // This effect handles auth state changes
+  useEffect(() => {
+    // If user becomes logged in and auth modal is open, close it
+    if (user && showAuthModal) {
+      setShowAuthModal(false);
+    }
+  }, [user, showAuthModal]);
 
   const handleBeginJourney = () => {
     if (!user) {

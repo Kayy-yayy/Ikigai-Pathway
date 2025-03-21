@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,53 +14,68 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
   const { user } = useUser();
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     // Initialize background music
     if (audioRef.current) {
       audioRef.current.volume = 0.2; // Set volume to 20%
       
-      // Try to play audio when component mounts
-      // Modern browsers require user interaction before playing audio
-      const playAudio = () => {
-        if (audioRef.current && audioRef.current.paused) {
-          audioRef.current.play().catch(err => {
-            console.log('Autoplay prevented. User interaction required to play audio.');
-          });
-        }
-      };
+      // Check if user has a preference for audio
+      const audioEnabled = localStorage.getItem('audioEnabled');
       
-      // Try to play immediately (might work if user has interacted before)
-      playAudio();
-      
-      // Add event listeners to play audio after user interaction
-      const handleUserInteraction = () => {
+      // Try to play if user previously enabled audio
+      if (audioEnabled === 'true') {
         playAudio();
-        // Remove event listeners after first interaction
-        document.removeEventListener('click', handleUserInteraction);
-        document.removeEventListener('touchstart', handleUserInteraction);
-        document.removeEventListener('keydown', handleUserInteraction);
-      };
-      
-      document.addEventListener('click', handleUserInteraction);
-      document.addEventListener('touchstart', handleUserInteraction);
-      document.addEventListener('keydown', handleUserInteraction);
-      
-      // Clean up event listeners
-      return () => {
-        document.removeEventListener('click', handleUserInteraction);
-        document.removeEventListener('touchstart', handleUserInteraction);
-        document.removeEventListener('keydown', handleUserInteraction);
-      };
+      }
     }
+    
+    // Add event listener for visibility change to handle tab switching
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
+  
+  // Handle tab visibility changes
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      // Pause when tab is not visible
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause();
+      }
+    } else {
+      // Resume if it was playing before
+      if (audioRef.current && isPlaying) {
+        audioRef.current.play().catch(err => {
+          console.log('Could not resume audio:', err);
+        });
+      }
+    }
+  };
+  
+  // Function to play audio
+  const playAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        localStorage.setItem('audioEnabled', 'true');
+      }).catch(err => {
+        console.log('Autoplay prevented. User interaction required to play audio.', err);
+        setIsPlaying(false);
+      });
+    }
+  };
 
   const toggleAudio = () => {
     if (audioRef.current) {
       if (audioRef.current.paused) {
-        audioRef.current.play();
+        playAudio();
       } else {
         audioRef.current.pause();
+        setIsPlaying(false);
+        localStorage.setItem('audioEnabled', 'false');
       }
     }
   };
@@ -107,7 +122,11 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
               aria-label="Toggle background music"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M9.5 6.5v11a1 1 0 001.5.87l7.5-5.5a1 1 0 000-1.74l-7.5-5.5a1 1 0 00-1.5.87z" />
+                {isPlaying ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M9.5 6.5v11a1 1 0 001.5.87l7.5-5.5a1 1 0 000-1.74l-7.5-5.5a1 1 0 00-1.5.87z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                )}
               </svg>
             </button>
           </nav>
@@ -127,7 +146,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
       </footer>
 
       {/* Background audio */}
-      <audio ref={audioRef} loop>
+      <audio ref={audioRef} loop preload="auto">
         <source src="/sounds/zen_background.mp3" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>

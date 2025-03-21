@@ -145,7 +145,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error('All fields are required');
       }
       
-      // Step 1: Sign up the user with Supabase Auth with auto-confirmation
+      // Step 1: Sign up the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -154,7 +154,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             username: username,
             avatar_id: avatarId,
             avatar_url: `/images/avatar images/${avatarId}.jpg`
-          }
+          },
+          emailRedirectTo: `${window.location.origin}`
+          // Note: emailConfirm option removed as it's not supported
         }
       });
       
@@ -166,31 +168,24 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error('Failed to create user account');
       }
       
-      // If we don't have a session, sign in immediately
-      if (!authData.session) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      // If we have a session, the user is automatically signed in
+      if (authData.session) {
+        // The auth state change listener will handle setting the user
+        return { success: true, message: 'Account created successfully! Welcome to Ikigai Pathway.' };
+      } else {
+        // Try to sign in immediately
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password
         });
         
         if (signInError) {
           console.error('Error signing in after signup:', signInError);
-          throw new Error('Account created but failed to sign in automatically. Please try signing in manually.');
+          return { success: true, message: 'Account created! Please sign in with your credentials.' };
         }
         
-        // Update the user state with the new session
-        if (signInData.user) {
-          setUser({
-            id: signInData.user.id,
-            email: signInData.user.email || '',
-            username: signInData.user.user_metadata.username || '',
-            avatar_url: signInData.user.user_metadata.avatar_url || '',
-            avatar_id: signInData.user.user_metadata.avatar_id || ''
-          });
-        }
+        return { success: true, message: 'Account created successfully! Welcome to Ikigai Pathway.' };
       }
-      
-      return { success: true, message: 'Account created successfully! Welcome to Ikigai Pathway.' };
     } catch (error) {
       console.error('Error signing up:', error);
       throw error;
