@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../components/Layout';
-import QuestionModule from '../../components/QuestionModule';
-import { useUser } from '../../context/UserContext';
-import AuthModal from '../../components/AuthModal';
+import Layout from '@/components/Layout';
+import QuestionModule from '@/components/QuestionModule';
+import { useUser } from '@/context/UserContext';
+import AuthModal from '@/components/AuthModal';
 
 // Define questions for the Profession pillar
 const professionQuestions = [
@@ -38,9 +38,9 @@ export default function ProfessionPillar() {
   // If loading, show loading spinner
   if (loading) {
     return (
-      <Layout title="Profession Pillar">
+      <Layout>
         <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bamboo"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo"></div>
         </div>
       </Layout>
     );
@@ -49,9 +49,9 @@ export default function ProfessionPillar() {
   // If not logged in, show auth modal
   if (!user) {
     return (
-      <Layout title="Profession Pillar">
+      <Layout>
         <div className="container mx-auto px-4 py-12 max-w-3xl text-center">
-          <h1 className="font-noto text-3xl text-bamboo mb-6">
+          <h1 className="font-noto text-3xl text-indigo mb-6">
             Discover What You're Good At
           </h1>
           
@@ -61,7 +61,7 @@ export default function ProfessionPillar() {
           
           <button
             onClick={() => setShowAuthModal(true)}
-            className="bg-bamboo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300"
+            className="bg-indigo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300"
           >
             Sign In / Sign Up
           </button>
@@ -73,11 +73,11 @@ export default function ProfessionPillar() {
   }
 
   return (
-    <Layout title="Profession Pillar">
-      <div className="container mx-auto px-4 py-12 max-w-3xl">
+    <Layout>
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="text-center mb-8">
-          <div className="inline-block bg-bamboo bg-opacity-20 rounded-full px-4 py-2 mb-4">
-            <h1 className="font-noto text-3xl text-bamboo">
+          <div className="inline-block bg-indigo bg-opacity-20 rounded-full px-4 py-2 mb-4">
+            <h1 className="font-noto text-3xl text-indigo">
               Profession
             </h1>
           </div>

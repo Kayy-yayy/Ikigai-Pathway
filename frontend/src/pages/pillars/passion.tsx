@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../components/Layout';
-import QuestionModule from '../../components/QuestionModule';
-import { useUser } from '../../context/UserContext';
-import AuthModal from '../../components/AuthModal';
+import Layout from '@/components/Layout';
+import QuestionModule from '@/components/QuestionModule';
+import { useUser } from '@/context/UserContext';
+import AuthModal from '@/components/AuthModal';
 
 // Define questions for the Passion pillar
 const passionQuestions = [
@@ -38,7 +38,7 @@ export default function PassionPillar() {
   // If loading, show loading spinner
   if (loading) {
     return (
-      <Layout title="Passion Pillar">
+      <Layout>
         <div className="flex justify-center items-center h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sakura"></div>
         </div>
@@ -49,7 +49,7 @@ export default function PassionPillar() {
   // If not logged in, show auth modal
   if (!user) {
     return (
-      <Layout title="Passion Pillar">
+      <Layout>
         <div className="container mx-auto px-4 py-12 max-w-3xl text-center">
           <h1 className="font-noto text-3xl text-sakura mb-6">
             Discover What You Love
@@ -73,7 +73,7 @@ export default function PassionPillar() {
   }
 
   return (
-    <Layout title="Passion Pillar">
+    <Layout>
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="text-center mb-8">
           <div className="inline-block bg-sakura bg-opacity-20 rounded-full px-4 py-2 mb-4">

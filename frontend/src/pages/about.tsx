@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 
 export default function About() {
   return (
-    <Layout title="About Ikigai">
+    <Layout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <h1 className="font-noto text-4xl text-indigo text-center mb-8">
           Understanding Ikigai
