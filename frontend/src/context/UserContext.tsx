@@ -16,7 +16,7 @@ type UserContextType = {
   user: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, username: string, avatarId: string) => Promise<void>;
+  signUp: (email: string, password: string, username: string, avatarId: string) => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -135,7 +135,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Sign up function
   const signUp = async (email: string, password: string, username: string, avatarId: string) => {
-    if (!supabase) return;
+    if (!supabase) return { success: false, message: 'Supabase client not initialized' };
     
     try {
       setLoading(true);
@@ -154,7 +154,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             username: username,
             avatar_id: avatarId,
             avatar_url: `/images/avatar images/${avatarId}.jpg`
-          }
+          },
+          emailRedirectTo: `${window.location.origin}`
+          // Note: emailConfirm option removed as it's not supported
         }
       });
       
@@ -169,10 +171,20 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // If we have a session, the user is automatically signed in
       if (authData.session) {
         // The auth state change listener will handle setting the user
-        // We don't need to do anything else here
+        return { success: true, message: 'Account created successfully! Welcome to Ikigai Pathway.' };
       } else {
-        // If no session, user might need to verify email first
-        throw new Error('Account created! Please check your email to verify your account before signing in.');
+        // Try to sign in immediately
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (signInError) {
+          console.error('Error signing in after signup:', signInError);
+          return { success: true, message: 'Account created! Please sign in with your credentials.' };
+        }
+        
+        return { success: true, message: 'Account created successfully! Welcome to Ikigai Pathway.' };
       }
     } catch (error) {
       console.error('Error signing up:', error);

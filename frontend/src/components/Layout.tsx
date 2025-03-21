@@ -20,14 +20,40 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
     if (audioRef.current) {
       audioRef.current.volume = 0.2; // Set volume to 20%
       
-      // Only autoplay on the landing page
-      if (router.pathname === '/') {
-        audioRef.current.play().catch(err => {
-          console.log('Autoplay prevented. User interaction required to play audio.');
-        });
-      }
+      // Try to play audio when component mounts
+      // Modern browsers require user interaction before playing audio
+      const playAudio = () => {
+        if (audioRef.current && audioRef.current.paused) {
+          audioRef.current.play().catch(err => {
+            console.log('Autoplay prevented. User interaction required to play audio.');
+          });
+        }
+      };
+      
+      // Try to play immediately (might work if user has interacted before)
+      playAudio();
+      
+      // Add event listeners to play audio after user interaction
+      const handleUserInteraction = () => {
+        playAudio();
+        // Remove event listeners after first interaction
+        document.removeEventListener('click', handleUserInteraction);
+        document.removeEventListener('touchstart', handleUserInteraction);
+        document.removeEventListener('keydown', handleUserInteraction);
+      };
+      
+      document.addEventListener('click', handleUserInteraction);
+      document.addEventListener('touchstart', handleUserInteraction);
+      document.addEventListener('keydown', handleUserInteraction);
+      
+      // Clean up event listeners
+      return () => {
+        document.removeEventListener('click', handleUserInteraction);
+        document.removeEventListener('touchstart', handleUserInteraction);
+        document.removeEventListener('keydown', handleUserInteraction);
+      };
     }
-  }, [router.pathname]);
+  }, []);
 
   const toggleAudio = () => {
     if (audioRef.current) {

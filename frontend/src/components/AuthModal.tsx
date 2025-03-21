@@ -15,6 +15,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [username, setUsername] = useState('');
   const [avatarId, setAvatarId] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [allFieldsFilled, setAllFieldsFilled] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -34,6 +35,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setUsername('');
     setAvatarId('');
     setError('');
+    setSuccessMessage('');
     setAllFieldsFilled(false);
   }, [isOpen, isSignUp]);
 
@@ -49,6 +51,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
@@ -58,16 +61,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           throw new Error('All fields are required');
         }
         
-        await signUp(email, password, username, avatarId);
+        const result = await signUp(email, password, username, avatarId);
+        setSuccessMessage(result.message);
+        
+        // Close modal after a short delay to show success message
+        setTimeout(() => {
+          onClose();
+        }, 2000);
       } else {
         if (!email || !password) {
           throw new Error('Email and password are required');
         }
         
         await signIn(email, password);
+        onClose();
       }
-      
-      onClose();
     } catch (error) {
       console.error('Authentication error:', error);
       setError(error instanceof Error ? error.message : 'Authentication failed');
@@ -112,6 +120,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            {successMessage}
           </div>
         )}
 
