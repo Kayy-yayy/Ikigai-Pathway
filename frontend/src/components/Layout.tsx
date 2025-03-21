@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useUser } from '../context/UserContext';
+import AvatarTutorial from './AvatarTutorial';
 
 type LayoutProps = {
   children: ReactNode;
@@ -150,6 +151,9 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Ikigai Pathway' }) =
         <source src="/sounds/zen_background.mp3" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
+      
+      {/* Avatar Tutorial */}
+      <AvatarTutorial onComplete={() => router.push('/pillars/passion')} />
     </div>
   );
 };

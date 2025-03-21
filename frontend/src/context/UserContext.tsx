@@ -2,23 +2,25 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Define types
-type UserProfile = {
+export type UserProfile = {
   id: string;
   email: string;
-  username: string;
-  avatar_url: string;
-  avatar_id: string;
-  created_at?: string;
-  updated_at?: string;
+  username: string | null;
+  avatar_url: string | null;
+  avatar_id: string | null;
 };
 
-type UserContextType = {
+export type UserContextType = {
   user: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string, avatarId: string) => Promise<{ success: boolean; message: string }>;
+  signUpWithEmail: (email: string) => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateAvatar: (avatarId: string) => Promise<void>;
+  needsAvatarSelection: boolean;
+  setNeedsAvatarSelection: (value: boolean) => void;
 };
 
 // Create context
@@ -27,8 +29,9 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Create provider component
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const [needsAvatarSelection, setNeedsAvatarSelection] = useState(false);
 
   // Initialize Supabase client
   useEffect(() => {
@@ -194,6 +197,77 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Sign up with email only function
+  const signUpWithEmail = async (email: string) => {
+    if (!supabase) return { success: false, message: 'Supabase client not initialized' };
+    
+    try {
+      setLoading(true);
+      
+      // Validate email
+      if (!email) {
+        throw new Error('Email is required');
+      }
+      
+      // Generate a random password
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      
+      // Sign up the user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password: tempPassword,
+        options: {
+          data: {
+            email_signup: true
+          }
+        }
+      });
+      
+      if (authError) {
+        throw new Error(authError.message || 'Failed to sign up');
+      }
+      
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
+      }
+      
+      // Set flag to show avatar selection tutorial
+      setNeedsAvatarSelection(true);
+      
+      // If we have a session, the user is automatically signed in
+      if (authData.session) {
+        // Create a basic user profile
+        setUser({
+          id: authData.user.id,
+          email: authData.user.email || '',
+          username: null,
+          avatar_url: null,
+          avatar_id: null
+        });
+        
+        return { success: true, message: 'Account created successfully! Now let\'s choose your avatar.' };
+      } else {
+        // Try to sign in immediately
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password: tempPassword
+        });
+        
+        if (signInError) {
+          console.error('Error signing in after signup:', signInError);
+          return { success: true, message: 'Account created! Please check your email for login instructions.' };
+        }
+        
+        return { success: true, message: 'Account created successfully! Now let\'s choose your avatar.' };
+      }
+    } catch (error) {
+      console.error('Error signing up:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Sign out function
   const signOut = async () => {
     if (!supabase) return;
@@ -225,14 +299,70 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Update avatar function
+  const updateAvatar = async (avatarId: string) => {
+    if (!supabase || !user) return;
+    
+    try {
+      setLoading(true);
+      
+      // Update user metadata
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          avatar_id: avatarId,
+          avatar_url: `/images/avatar images/${avatarId}.jpg`
+        }
+      });
+      
+      if (updateError) {
+        throw new Error(updateError.message || 'Failed to update avatar');
+      }
+      
+      // Update profile in database
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          avatar_id: avatarId,
+          avatar_url: `/images/avatar images/${avatarId}.jpg`,
+          username: user.username || user.email?.split('@')[0] || 'User'
+        });
+      
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+      }
+      
+      // Update local user state
+      setUser({
+        ...user,
+        avatar_id: avatarId,
+        avatar_url: `/images/avatar images/${avatarId}.jpg`,
+        username: user.username || user.email?.split('@')[0] || 'User'
+      });
+      
+      // Reset the avatar selection flag
+      setNeedsAvatarSelection(false);
+      
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Context value
   const value = {
     user,
     loading,
     signIn,
     signUp,
+    signUpWithEmail,
     signOut,
     refreshProfile,
+    updateAvatar,
+    needsAvatarSelection,
+    setNeedsAvatarSelection
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

@@ -8,45 +8,33 @@ type AuthModalProps = {
 };
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { signIn, signUp } = useUser();
+  const { signIn, signUpWithEmail } = useUser();
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [avatarId, setAvatarId] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [allFieldsFilled, setAllFieldsFilled] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Available avatars
-  const avatars = [
-    { id: 'Geisha', name: 'Geisha' },
-    { id: 'Ninja', name: 'Ninja' },
-    { id: 'Samurai Warrior', name: 'Samurai Warrior' },
-    { id: 'Sumo Wrestler', name: 'Sumo Wrestler' },
-  ];
-
   useEffect(() => {
     // Reset form when modal opens/closes or switches between sign in/sign up
     setEmail('');
     setPassword('');
-    setUsername('');
-    setAvatarId('');
     setError('');
     setSuccessMessage('');
     setAllFieldsFilled(false);
   }, [isOpen, isSignUp]);
 
-  // Check if all fields are filled for sign up
+  // Check if all fields are filled
   useEffect(() => {
     if (isSignUp) {
-      setAllFieldsFilled(!!email && !!password && !!username && !!avatarId);
+      setAllFieldsFilled(!!email);
     } else {
       setAllFieldsFilled(!!email && !!password);
     }
-  }, [email, password, username, avatarId, isSignUp]);
+  }, [email, password, isSignUp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,11 +45,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     try {
       if (isSignUp) {
         // Validate fields
-        if (!email || !password || !username || !avatarId) {
-          throw new Error('All fields are required');
+        if (!email) {
+          throw new Error('Email is required');
         }
         
-        const result = await signUp(email, password, username, avatarId);
+        // Sign up with email only
+        const result = await signUpWithEmail(email);
         setSuccessMessage(result.message);
         
         // Close modal after a short delay to show success message
@@ -114,7 +103,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </button>
 
         <h2 className="text-2xl font-noto text-indigo text-center mb-6">
-          {isSignUp ? 'Create Your Account' : 'Welcome Back'}
+          {isSignUp ? 'Begin Your Journey' : 'Welcome Back'}
         </h2>
 
         {error && (
@@ -144,67 +133,26 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             />
           </div>
 
-          <div className="mb-4">
-            <label htmlFor="password" className="block font-sawarabi text-sumi mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo"
-              required
-            />
-          </div>
+          {!isSignUp && (
+            <div className="mb-4">
+              <label htmlFor="password" className="block font-sawarabi text-sumi mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo"
+                required
+              />
+            </div>
+          )}
 
           {isSignUp && (
-            <>
-              <div className="mb-4">
-                <label htmlFor="username" className="block font-sawarabi text-sumi mb-2">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block font-sawarabi text-sumi mb-2">
-                  Choose Your Avatar
-                </label>
-                <div className="overflow-x-auto pb-2">
-                  <div className="flex space-x-4 min-w-max">
-                    {avatars.map((avatar) => (
-                      <div
-                        key={avatar.id}
-                        className={`border-2 rounded-lg p-2 cursor-pointer transition-all flex-shrink-0 w-32 ${
-                          avatarId === avatar.id
-                            ? 'border-indigo bg-indigo bg-opacity-10'
-                            : 'border-gray-200 hover:border-indigo'
-                        }`}
-                        onClick={() => setAvatarId(avatar.id)}
-                      >
-                        <div className="relative h-24 w-full mb-2">
-                          <Image
-                            src={`/images/avatar images/${avatar.id}.jpg`}
-                            alt={avatar.name}
-                            layout="fill"
-                            objectFit="contain"
-                          />
-                        </div>
-                        <p className="text-center font-sawarabi text-sm">{avatar.name}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
+            <p className="text-sm text-gray-600 mb-4">
+              We'll create an account for you and send a temporary password to your email.
+            </p>
           )}
 
           <button
@@ -216,7 +164,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
+            {loading ? 'Processing...' : isSignUp ? 'Start Your Journey' : 'Sign In'}
           </button>
           
           <div className="text-center mt-4">
