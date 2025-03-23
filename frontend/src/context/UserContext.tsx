@@ -263,48 +263,73 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     try {
       setLoading(true);
+      console.log('Updating avatar:', avatarId, 'and username:', username);
       
-      // Update user metadata
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { 
-          avatar_id: avatarId,
-          ...(username ? { username } : {})
+      // Add timeout to prevent hanging
+      const updatePromise = async () => {
+        try {
+          // Update user metadata
+          const { error: updateError } = await supabase.auth.updateUser({
+            data: { 
+              avatar_id: avatarId,
+              ...(username ? { username } : {})
+            }
+          });
+          
+          if (updateError) {
+            console.error('Error updating user metadata:', updateError);
+            throw new Error(updateError.message || 'Failed to update avatar');
+          }
+          
+          console.log('User metadata updated successfully');
+          
+          // Update profile in database
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: user.id,
+              avatar_id: avatarId,
+              avatar_url: `/images/avatar images/${avatarId}.jpg`,
+              email: user.email,
+              ...(username ? { username } : {})
+            });
+          
+          if (profileError) {
+            console.error('Error updating profile:', profileError);
+            // Continue even if profile update fails
+          } else {
+            console.log('Profile updated successfully');
+          }
+          
+          // Update local user state
+          setUser(prev => prev ? {
+            ...prev,
+            avatar_id: avatarId,
+            avatar_url: `/images/avatar images/${avatarId}.jpg`,
+            ...(username ? { username } : {})
+          } : null);
+          
+          // Reset the avatar selection flag
+          setNeedsAvatarSelection(false);
+          
+          return { success: true, message: 'Avatar updated successfully!' };
+        } catch (error) {
+          console.error('Error in update promise:', error);
+          throw error;
         }
-      });
+      };
       
-      if (updateError) {
-        throw new Error(updateError.message || 'Failed to update avatar');
-      }
+      // Set a timeout of 8 seconds for the update
+      const timeoutPromise = new Promise<{success: boolean, message: string}>((_, reject) => 
+        setTimeout(() => reject(new Error('Update is taking too long. Please try again.')), 8000)
+      );
       
-      // Update profile in database
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          avatar_id: avatarId,
-          avatar_url: `/images/avatar images/${avatarId}.jpg`,
-          email: user.email,
-          ...(username ? { username } : {})
-        });
-      
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
-      }
-      
-      // Update local user state
-      setUser(prev => prev ? {
-        ...prev,
-        avatar_id: avatarId,
-        avatar_url: `/images/avatar images/${avatarId}.jpg`,
-        ...(username ? { username } : {})
-      } : null);
-      
-      // Reset the avatar selection flag
-      setNeedsAvatarSelection(false);
-      
-      return { success: true, message: 'Avatar updated successfully!' };
+      // Race the update against the timeout
+      return await Promise.race([updatePromise(), timeoutPromise]);
     } catch (error) {
       console.error('Error updating avatar:', error);
+      // Force reset the avatar selection flag to avoid getting stuck
+      setNeedsAvatarSelection(false);
       throw error;
     } finally {
       setLoading(false);

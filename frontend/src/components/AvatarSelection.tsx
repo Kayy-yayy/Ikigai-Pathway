@@ -35,79 +35,89 @@ const AvatarSelection: React.FC<AvatarSelectionProps> = ({ isOpen, onClose }) =>
   ];
   
   const handleAvatarSelect = async () => {
-    if (!selectedAvatar) return;
+    if (!selectedAvatar) {
+      setError('Please select an avatar to continue');
+      return;
+    }
     
     try {
       setLoading(true);
       setError('');
+      setSuccessMessage('Updating your profile...');
       
-      const result = await updateAvatar(selectedAvatar, username);
-      setSuccessMessage(result.message);
+      // Add a timeout to prevent infinite loading
+      const updatePromise = updateAvatar(selectedAvatar, username);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile update is taking longer than expected. Please try again.')), 10000)
+      );
       
-      // Redirect after a short delay
+      try {
+        const result = await Promise.race([updatePromise, timeoutPromise]) as {success: boolean, message: string};
+        setSuccessMessage(result.message);
+        
+        // Redirect after a short delay
+        setTimeout(() => {
+          onClose();
+          router.push('/pillars/passion');
+        }, 1500);
+      } catch (raceError) {
+        console.error('Avatar update race error:', raceError);
+        setError(raceError instanceof Error ? raceError.message : 'Failed to update profile');
+        
+        // Force redirect if we're stuck
+        setTimeout(() => {
+          onClose();
+          router.push('/pillars/passion');
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Avatar selection error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update profile');
+      
+      // Force redirect if we're stuck
       setTimeout(() => {
         onClose();
         router.push('/pillars/passion');
-      }, 1500);
-    } catch (error) {
-      console.error('Error updating avatar:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update avatar');
+      }, 3000);
     } finally {
       setLoading(false);
     }
   };
   
-  if (!isOpen && !needsAvatarSelection) return null;
+  if (!isOpen) return null;
   
   return (
     <div className="fixed inset-0 bg-sumi bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-softWhite rounded-lg shadow-xl max-w-md w-full p-6 relative">
+      <div className="bg-softWhite rounded-lg shadow-xl max-w-md w-full p-6">
         <h2 className="text-2xl font-noto text-indigo text-center mb-6">
           Personalize Your Journey
         </h2>
         
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {successMessage}
-          </div>
-        )}
-        
         <div className="mb-6">
-          <label htmlFor="username" className="block font-sawarabi text-sumi mb-2">
-            Choose a Username
+          <label htmlFor="username" className="block text-sumi mb-2 font-sawarabi">
+            Choose a username:
           </label>
           <input
             type="text"
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo"
-            placeholder="Enter your preferred username"
-            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo"
+            placeholder="Enter username"
+            disabled={loading}
           />
-          <p className="text-sm text-gray-500 mt-1">
-            This is how you'll be identified in your Ikigai journey
-          </p>
         </div>
         
-        <p className="text-sumi mb-4 text-center">
-          Select an avatar to represent you on your journey to finding your Ikigai.
-        </p>
+        <p className="text-sumi mb-4 font-sawarabi">Select your avatar:</p>
         
         <div className="grid grid-cols-2 gap-4 mb-6">
           {avatars.map((avatar) => (
             <div
               key={avatar.id}
-              className={`border-2 rounded-lg p-2 cursor-pointer transition-all ${
+              className={`border-2 rounded-lg p-3 cursor-pointer transition-all ${
                 selectedAvatar === avatar.id
                   ? 'border-indigo bg-indigo bg-opacity-10'
-                  : 'border-gray-200 hover:border-indigo'
+                  : 'border-gray-200 hover:border-indigo hover:bg-gray-50'
               }`}
               onClick={() => setSelectedAvatar(avatar.id)}
             >
@@ -119,21 +129,33 @@ const AvatarSelection: React.FC<AvatarSelectionProps> = ({ isOpen, onClose }) =>
                   objectFit="contain"
                 />
               </div>
-              <p className="text-center font-sawarabi text-sm">{avatar.name}</p>
+              <p className="text-center text-sumi font-sawarabi">{avatar.name}</p>
             </div>
           ))}
         </div>
         
+        {error && (
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded-md mb-4">
+            {error}
+          </div>
+        )}
+        
+        {successMessage && (
+          <div className="bg-green-100 border border-green-300 text-green-700 px-4 py-2 rounded-md mb-4">
+            {successMessage}
+          </div>
+        )}
+        
         <button
           onClick={handleAvatarSelect}
-          disabled={loading || !selectedAvatar || !username.trim()}
-          className={`w-full font-sawarabi py-2 px-4 rounded-md transition duration-300 ${
-            selectedAvatar && username.trim() && !loading
-              ? 'bg-bamboo hover:bg-bamboo-dark text-white transform hover:scale-105'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          disabled={loading || !selectedAvatar}
+          className={`w-full py-2 px-4 rounded-md font-sawarabi ${
+            loading || !selectedAvatar
+              ? 'bg-gray-300 cursor-not-allowed'
+              : 'bg-indigo hover:bg-opacity-90 text-white'
           }`}
         >
-          {loading ? 'Updating...' : 'Begin Your Journey'}
+          {loading ? 'Processing...' : 'Continue'}
         </button>
       </div>
     </div>
