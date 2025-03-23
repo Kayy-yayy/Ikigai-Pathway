@@ -180,6 +180,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error('Email and verification code are required');
       }
       
+      console.log('Verifying OTP...');
+      
       // Verify the OTP
       const { data, error } = await supabase.auth.verifyOtp({
         email,
@@ -188,6 +190,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       
       if (error) {
+        console.error('OTP verification error:', error);
         throw new Error(error.message || 'Invalid verification code');
       }
       
@@ -195,28 +198,57 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error('Failed to verify user');
       }
       
-      // Check if user has an avatar
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('avatar_id')
-        .eq('id', data.user.id)
-        .single();
+      console.log('OTP verified successfully, checking profile...');
       
-      const hasAvatar = profile?.avatar_id || data.user.user_metadata?.avatar_id;
-      
-      // If no avatar, set flag to show avatar selection
-      if (!hasAvatar) {
-        setNeedsAvatarSelection(true);
+      try {
+        // Check if user has an avatar - with timeout to prevent hanging
+        const profilePromise = supabase
+          .from('profiles')
+          .select('avatar_id, username')
+          .eq('id', data.user.id)
+          .single();
+          
+        // Set a timeout of 3 seconds for the profile query
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile query timed out')), 3000)
+        );
+        
+        // Race the profile query against the timeout
+        const { data: profile } = await Promise.race([
+          profilePromise,
+          timeoutPromise
+        ]) as any;
+        
+        const hasAvatar = profile?.avatar_id || data.user.user_metadata?.avatar_id;
+        
+        // If no avatar, set flag to show avatar selection
+        if (!hasAvatar) {
+          setNeedsAvatarSelection(true);
+          // Update the user state immediately with what we know
+          await updateUserState(data.user);
+          return { 
+            success: true, 
+            message: 'Login successful! Now let\'s choose your avatar.' 
+          };
+        }
+        
+        // Update the user state with the authenticated user
+        await updateUserState(data.user);
+        
         return { 
           success: true, 
-          message: 'Login successful! Now let\'s choose your avatar.' 
+          message: 'Login successful!' 
+        };
+      } catch (profileError) {
+        console.error('Error fetching profile:', profileError);
+        // Even if profile fetch fails, we should still log the user in
+        setNeedsAvatarSelection(true);
+        await updateUserState(data.user);
+        return { 
+          success: true, 
+          message: 'Login successful! Please set up your profile.' 
         };
       }
-      
-      return { 
-        success: true, 
-        message: 'Login successful!' 
-      };
     } catch (error) {
       console.error('Error verifying code:', error);
       throw error;

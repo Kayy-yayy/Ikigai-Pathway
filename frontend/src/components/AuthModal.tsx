@@ -60,7 +60,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         throw new Error('Verification code is required');
       }
       
-      const result = await verifyOtp(email, otp);
+      setSuccessMessage('Verifying your code...');
+      
+      // Add a timeout to prevent infinite loading
+      const verificationPromise = verifyOtp(email, otp);
+      const timeoutPromise = new Promise<{success: boolean, message: string}>((_, reject) => 
+        setTimeout(() => reject(new Error('Verification is taking longer than expected. Please try again.')), 10000)
+      );
+      
+      const result = await Promise.race([verificationPromise, timeoutPromise]) as {success: boolean, message: string};
       setSuccessMessage(result.message);
       
       // Close modal after successful verification
