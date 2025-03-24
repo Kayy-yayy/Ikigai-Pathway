@@ -1,12 +1,12 @@
 import React from 'react';
 import type { AppProps } from 'next/app';
-import { UserProvider } from '../context/UserContext';
+import { SimpleUserProvider } from '../context/SimpleUserContext';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <UserProvider>
+    <SimpleUserProvider>
       <Component {...pageProps} />
-    </UserProvider>
+    </SimpleUserProvider>
   );
 }

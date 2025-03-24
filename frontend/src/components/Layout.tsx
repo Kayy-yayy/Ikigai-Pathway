@@ -3,30 +3,21 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useUser } from '../context/UserContext';
-import AvatarSelection from './AvatarSelection';
+import { useSimpleUser } from '../context/SimpleUserContext';
 
 type LayoutProps = {
   children: ReactNode;
 };
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { user, signOut, needsAvatarSelection } = useUser();
+  const { user } = useSimpleUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showAvatarSelection, setShowAvatarSelection] = useState(false);
   const router = useRouter();
 
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [router.pathname]);
-
-  // Show avatar selection if needed
-  useEffect(() => {
-    if (needsAvatarSelection && user) {
-      setShowAvatarSelection(true);
-    }
-  }, [needsAvatarSelection, user]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -109,83 +100,55 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <header className="bg-sumi shadow-md">
         <div className="container mx-auto px-4 py-3">
           <nav className="flex justify-between items-center">
-            {/* Logo */}
-            <Link href="/">
-              <a className="flex items-center">
-                <div className="relative w-10 h-10 mr-2">
-                  <Image
-                    src="/images/ikigai-logo.png"
-                    alt="Ikigai Pathway Logo"
-                    layout="fill"
-                    objectFit="contain"
-                  />
+            {/* Logo and Avatar Section */}
+            <div className="flex items-center">
+              {/* User Avatar (if available) */}
+              {user && (
+                <div className="relative w-10 h-10 mr-3">
+                  <div className="w-10 h-10 rounded-full border-2 border-gold overflow-hidden">
+                    <Image
+                      src={`/images/avatar images/${user.avatar_id}.jpg`}
+                      alt="User Avatar"
+                      layout="fill"
+                      objectFit="cover"
+                    />
+                  </div>
                 </div>
-                <span className="text-xl font-noto text-gold">Ikigai Pathway</span>
-              </a>
-            </Link>
+              )}
+              
+              {/* Logo */}
+              <Link href="/">
+                <a className="flex items-center">
+                  <div className="relative w-10 h-10 mr-2">
+                    <Image
+                      src="/images/ikigai-logo.png"
+                      alt="Ikigai Pathway Logo"
+                      layout="fill"
+                      objectFit="contain"
+                    />
+                  </div>
+                  <span className="text-xl font-noto text-gold">Ikigai Pathway</span>
+                </a>
+              </Link>
+            </div>
 
-            {/* Authenticated User Section */}
-            {user ? (
-              <div className="flex items-center space-x-4">
-                {/* Navigation Links - Desktop */}
-                <div className="hidden md:flex space-x-6">
-                  <Link href="/">
-                    <a className="text-softWhite hover:text-gold transition duration-300">Home</a>
-                  </Link>
-                  <Link href="/pillars/passion">
-                    <a className="text-softWhite hover:text-gold transition duration-300">Pillars</a>
-                  </Link>
-                  {user.has_completed_questions && (
-                    <Link href="/ikigai-chart">
-                      <a className="text-softWhite hover:text-gold transition duration-300">Ikigai Chart</a>
-                    </Link>
-                  )}
-                  <Link href="/about">
-                    <a className="text-softWhite hover:text-gold transition duration-300">About</a>
-                  </Link>
-                </div>
-                
-                {/* User Profile */}
-                <div 
-                  className="flex items-center space-x-2 text-softWhite hover:text-gold transition duration-300 cursor-pointer"
-                  onClick={() => setShowAvatarSelection(true)}
-                >
-                  {user.avatar_id ? (
-                    <div className="relative w-8 h-8 rounded-full overflow-hidden">
-                      <Image 
-                        src={`/images/avatar images/${user.avatar_id}.jpg`} 
-                        alt="User avatar" 
-                        layout="fill" 
-                        objectFit="cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-bamboo flex items-center justify-center text-white">
-                      {user.email ? user.email[0].toUpperCase() : 'U'}
-                    </div>
-                  )}
-                  <span className="hidden md:inline">{user.username || user.email.split('@')[0]}</span>
-                </div>
-                <button 
-                  onClick={signOut}
-                  className="text-softWhite hover:text-gold transition duration-300"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                {/* Non-authenticated Navigation */}
-                <div className="hidden md:flex space-x-6">
-                  <Link href="/">
-                    <a className="text-softWhite hover:text-gold transition duration-300">Home</a>
-                  </Link>
-                  <Link href="/about">
-                    <a className="text-softWhite hover:text-gold transition duration-300">About</a>
-                  </Link>
-                </div>
-              </div>
-            )}
+            {/* Navigation Links - Desktop */}
+            <div className="hidden md:flex space-x-6">
+              <Link href="/">
+                <a className="text-softWhite hover:text-gold transition duration-300">Home</a>
+              </Link>
+              <Link href="/pillars/passion">
+                <a className="text-softWhite hover:text-gold transition duration-300">Pillars</a>
+              </Link>
+              {user && user.has_completed_questions && (
+                <Link href="/ikigai-chart">
+                  <a className="text-softWhite hover:text-gold transition duration-300">Ikigai Chart</a>
+                </Link>
+              )}
+              <Link href="/about">
+                <a className="text-softWhite hover:text-gold transition duration-300">About</a>
+              </Link>
+            </div>
             
             {/* Mobile Menu Button */}
             <button 
@@ -209,50 +172,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     Home
                   </a>
                 </Link>
-                
-                {user ? (
-                  <>
-                    <Link href="/pillars/passion">
-                      <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
-                        Pillars
-                      </a>
-                    </Link>
-                    {user.has_completed_questions && (
-                      <Link href="/ikigai-chart">
-                        <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
-                          Ikigai Chart
-                        </a>
-                      </Link>
-                    )}
-                  </>
-                ) : (
-                  <button 
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300"
-                  >
-                    Sign In
-                  </button>
+                <Link href="/pillars/passion">
+                  <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
+                    Pillars
+                  </a>
+                </Link>
+                {user && user.has_completed_questions && (
+                  <Link href="/ikigai-chart">
+                    <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
+                      Ikigai Chart
+                    </a>
+                  </Link>
                 )}
-                
                 <Link href="/about">
                   <a className="block px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300">
                     About
                   </a>
                 </Link>
-                
-                {user && (
-                  <button 
-                    onClick={() => {
-                      signOut();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-softWhite hover:bg-indigo hover:bg-opacity-20 transition duration-300"
-                  >
-                    Sign Out
-                  </button>
-                )}
               </div>
             )}
             
@@ -304,12 +240,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <source src="/sounds/zen_background.mp3" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
-      
-      {/* Avatar Selection Modal */}
-      <AvatarSelection 
-        isOpen={showAvatarSelection} 
-        onClose={() => setShowAvatarSelection(false)} 
-      />
     </div>
   );
 };

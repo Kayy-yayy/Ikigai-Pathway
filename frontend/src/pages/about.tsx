@@ -1,10 +1,10 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import Link from 'next/link';
-import { useUser } from '../context/UserContext';
+import { useSimpleUser } from '../context/SimpleUserContext';
 
 export default function About() {
-  const { user } = useUser();
+  const { user } = useSimpleUser();
 
   return (
     <Layout>

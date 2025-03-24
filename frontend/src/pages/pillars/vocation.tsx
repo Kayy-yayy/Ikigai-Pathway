@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import QuestionModule from '@/components/QuestionModule';
-import { useUser } from '@/context/UserContext';
-import AuthModal from '@/components/AuthModal';
+import { useSimpleUser } from '@/context/SimpleUserContext';
 
 // Define questions for the Vocation pillar
 const vocationQuestions = [
@@ -26,11 +25,56 @@ const vocationQuestions = [
 ];
 
 export default function VocationPillar() {
-  const { user, loading } = useUser();
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { user, loading, updateQuestionCompletion } = useSimpleUser();
+  const [allPillarsCompleted, setAllPillarsCompleted] = useState(false);
   const router = useRouter();
 
-  const handleComplete = () => {
+  // Check if all pillars are completed
+  useEffect(() => {
+    const checkAllPillarsCompleted = async () => {
+      if (!user || !user.id) return;
+      
+      try {
+        // Check if responses exist for all pillars
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/responses/check-completion?user_id=${user.id}`);
+        
+        if (res.ok) {
+          const data = await res.json();
+          setAllPillarsCompleted(data.allCompleted);
+          
+          // If all pillars are completed, update the user's completion status
+          if (data.allCompleted && !user.has_completed_questions) {
+            await updateQuestionCompletion(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking pillar completion:', error);
+      }
+    };
+    
+    checkAllPillarsCompleted();
+  }, [user, updateQuestionCompletion]);
+
+  const handleComplete = async () => {
+    // Save responses to the server
+    if (user && user.id) {
+      try {
+        // Check if all pillars are completed after this one
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/responses/check-completion?user_id=${user.id}`);
+        
+        if (res.ok) {
+          const data = await res.json();
+          
+          // If this was the last pillar to complete
+          if (data.allCompleted && !user.has_completed_questions) {
+            await updateQuestionCompletion(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error updating completion status:', error);
+      }
+    }
+    
     // Navigate to the ikigai chart page
     router.push('/ikigai-chart');
   };
@@ -46,58 +90,37 @@ export default function VocationPillar() {
     );
   }
 
-  // If not logged in, show auth modal
-  if (!user) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-12 max-w-3xl text-center">
-          <h1 className="font-noto text-3xl text-indigo mb-6">
-            Discover What You Can Be Paid For
-          </h1>
-          
-          <p className="font-sawarabi text-sumi mb-8">
-            Please sign in or create an account to explore your ikigai journey.
-          </p>
-          
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className="bg-indigo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300"
-          >
-            Sign In / Sign Up
-          </button>
-          
-          <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-12 max-w-3xl">
-        <div className="text-center mb-8">
-          <div className="inline-block bg-indigo bg-opacity-20 rounded-full px-4 py-2 mb-4">
-            <h1 className="font-noto text-3xl text-indigo">
-              Vocation
-            </h1>
-          </div>
-          
-          <p className="font-sawarabi text-sumi">
-            Identify what you can be paid for – activities that provide financial stability and support.
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-noto text-indigo mb-4">
+            Vocation
+          </h1>
+          <p className="text-lg font-sawarabi text-sumi">
+            Discover what the world needs and what the world will pay for
           </p>
         </div>
         
-        <QuestionModule
-          pillar="vocation"
-          questions={vocationQuestions}
-          onComplete={handleComplete}
-        />
-        
-        <div className="mt-8 text-center">
-          <p className="font-hina text-lg text-gray-600 italic">
-            "Choose a job you love, and you will never have to work a day in your life."
-            <span className="block mt-2">— Confucius</span>
-          </p>
+        <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 md:p-8 mb-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-noto text-indigo mb-2">
+              What is Vocation in Ikigai?
+            </h2>
+            <p className="font-sawarabi text-sumi">
+              In the Ikigai framework, vocation represents the intersection of what the world needs and what the world will pay for. 
+              These are the valuable services and solutions that address real problems in society.
+              Identifying your vocation helps you find work that is both sustainable and impactful.
+            </p>
+          </div>
+          
+          <QuestionModule
+            questions={vocationQuestions}
+            pillarName="vocation"
+            pillarColor="indigo"
+            onComplete={handleComplete}
+            userId={user?.id}
+          />
         </div>
       </div>
     </Layout>

@@ -3,12 +3,10 @@ import { useRouter } from 'next/router';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Layout from '@/components/Layout';
-import { useUser } from '@/context/UserContext';
-import AuthModal from '@/components/AuthModal';
+import { useSimpleUser } from '@/context/SimpleUserContext';
 
 export default function IkigaiChart() {
-  const { user, loading } = useUser();
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { user, loading } = useSimpleUser();
   const [chartData, setChartData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,24 +14,19 @@ export default function IkigaiChart() {
   const chartRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Check if user is authenticated and has completed questions
+  // Check if user has completed questions
   useEffect(() => {
     if (loading) return;
     
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-    
-    // Redirect if user hasn't completed their questions
-    if (!user.has_completed_questions) {
-      router.push('/pillars/passion');
+    // Redirect if user doesn't exist or hasn't completed their questions
+    if (!user || !user.has_completed_questions) {
+      router.push('/');
     }
   }, [user, loading, router]);
 
   // Load user responses and generate chart data
   useEffect(() => {
-    if (!user || !user.has_completed_questions) return;
+    if (!user || !user.id || !user.has_completed_questions) return;
 
     const fetchResponses = async () => {
       try {
@@ -46,56 +39,64 @@ export default function IkigaiChart() {
         
         const data = await res.json();
         
+        // Group responses by pillar
+        const responsesByPillar: Record<string, string[]> = {
+          passion: [],
+          profession: [],
+          mission: [],
+          vocation: []
+        };
+        
+        data.forEach((item: any) => {
+          if (responsesByPillar[item.pillar]) {
+            // Split the pipe-separated responses
+            const responses = item.response.split('|');
+            responsesByPillar[item.pillar] = [
+              ...responsesByPillar[item.pillar],
+              ...responses
+            ];
+          }
+        });
+        
         // Check if we have responses for all pillars
         const pillars = ['passion', 'profession', 'mission', 'vocation'];
         const hasAllPillars = pillars.every(pillar => 
-          data.some((item: any) => item.pillar === pillar)
+          responsesByPillar[pillar].length > 0
         );
         
         if (!hasAllPillars) {
-          setChartData(null);
+          setError('Please complete all four pillars before viewing your Ikigai chart');
+          setIsLoading(false);
           return;
         }
         
-        // Process responses into chart data
-        const processedData: any = {};
+        // Generate chart data
+        const chartData = {
+          passion: responsesByPillar.passion,
+          profession: responsesByPillar.profession,
+          mission: responsesByPillar.mission,
+          vocation: responsesByPillar.vocation,
+          // Intersections
+          love: findIntersection(responsesByPillar.passion, responsesByPillar.mission),
+          good: findIntersection(responsesByPillar.passion, responsesByPillar.profession),
+          paid: findIntersection(responsesByPillar.profession, responsesByPillar.vocation),
+          needs: findIntersection(responsesByPillar.mission, responsesByPillar.vocation),
+          // Center - Ikigai
+          ikigai: findMultiIntersection([
+            responsesByPillar.passion,
+            responsesByPillar.profession,
+            responsesByPillar.mission,
+            responsesByPillar.vocation
+          ])
+        };
         
-        pillars.forEach(pillar => {
-          const pillarResponses = data.filter((item: any) => item.pillar === pillar);
-          processedData[pillar] = pillarResponses.map((item: any) => ({
-            questionId: item.question_id,
-            responses: item.response.split('|')
-          }));
-        });
+        setChartData(chartData);
         
-        // Save chart data to Supabase
-        const chartRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/charts`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: user.id,
-            chart_data: processedData
-          }),
-        });
-        
-        if (!chartRes.ok) {
-          throw new Error('Failed to save chart data');
-        }
-        
-        setChartData(processedData);
-        
-        // Fetch workplace tips
-        const tipsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/charts/${user.id}/tips`);
-        
-        if (tipsRes.ok) {
-          const tipsData = await tipsRes.json();
-          setTips(tipsData);
-        }
+        // Generate tips based on chart data
+        generateTips(chartData);
       } catch (err) {
-        console.error('Error loading chart data:', err);
-        setError('Failed to load your ikigai chart data');
+        console.error('Error loading responses:', err);
+        setError('Failed to load your responses');
       } finally {
         setIsLoading(false);
       }
@@ -104,56 +105,139 @@ export default function IkigaiChart() {
     fetchResponses();
   }, [user]);
 
-  const handleDownloadPNG = async () => {
-    if (!chartRef.current) return;
-    
-    try {
-      const canvas = await html2canvas(chartRef.current, {
-        scale: 2,
-        backgroundColor: '#F9F5F0',
-      });
-      
-      const link = document.createElement('a');
-      link.download = 'ikigai-chart.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (err) {
-      console.error('Error downloading PNG:', err);
-      setError('Failed to download chart as PNG');
-    }
+  // Find intersection between two arrays
+  const findIntersection = (arr1: string[], arr2: string[]) => {
+    return arr1.filter(item => 
+      arr2.some(item2 => 
+        item.toLowerCase().includes(item2.toLowerCase()) || 
+        item2.toLowerCase().includes(item.toLowerCase())
+      )
+    );
   };
 
-  const handleDownloadPDF = async () => {
+  // Find intersection between multiple arrays
+  const findMultiIntersection = (arrays: string[][]) => {
+    if (arrays.length === 0) return [];
+    
+    let result = arrays[0];
+    
+    for (let i = 1; i < arrays.length; i++) {
+      result = findIntersection(result, arrays[i]);
+    }
+    
+    return result;
+  };
+
+  // Generate tips based on chart data
+  const generateTips = (chartData: any) => {
+    const newTips = [];
+    
+    // Check if ikigai is empty
+    if (chartData.ikigai.length === 0) {
+      newTips.push({
+        tip: "Your Ikigai center is empty. Try to find activities that combine all four pillars.",
+        category: "ikigai"
+      });
+    }
+    
+    // Check for weak intersections
+    if (chartData.love.length === 0) {
+      newTips.push({
+        tip: "Consider how your passions can address needs in the world.",
+        category: "love"
+      });
+    }
+    
+    if (chartData.good.length === 0) {
+      newTips.push({
+        tip: "Look for ways to develop skills in areas you're passionate about.",
+        category: "good"
+      });
+    }
+    
+    if (chartData.paid.length === 0) {
+      newTips.push({
+        tip: "Explore how your skills can be applied to address market demands.",
+        category: "paid"
+      });
+    }
+    
+    if (chartData.needs.length === 0) {
+      newTips.push({
+        tip: "Consider how addressing world needs can be turned into sustainable work.",
+        category: "needs"
+      });
+    }
+    
+    // Add general tips
+    newTips.push({
+      tip: "Revisit your answers regularly as your Ikigai evolves over time.",
+      category: "general"
+    });
+    
+    newTips.push({
+      tip: "Start small: pick one item from your Ikigai center to explore further.",
+      category: "general"
+    });
+    
+    setTips(newTips);
+  };
+
+  // Download chart as PDF
+  const downloadPDF = async () => {
     if (!chartRef.current) return;
     
     try {
       const canvas = await html2canvas(chartRef.current, {
         scale: 2,
-        backgroundColor: '#F9F5F0',
+        backgroundColor: null,
+        logging: false
       });
       
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
+        format: 'a4'
       });
       
-      const imgWidth = 280;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 20;
       
-      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      
+      // Add title
+      pdf.setFontSize(24);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('Your Ikigai Chart', pdfWidth / 2, 10, { align: 'center' });
+      
+      // Add tips
+      if (tips.length > 0) {
+        pdf.addPage();
+        pdf.setFontSize(18);
+        pdf.text('Tips for Your Ikigai Journey', pdfWidth / 2, 20, { align: 'center' });
+        
+        pdf.setFontSize(12);
+        let yPos = 40;
+        
+        tips.forEach((tip, index) => {
+          pdf.text(`${index + 1}. ${tip.tip}`, 20, yPos);
+          yPos += 10;
+        });
+      }
+      
       pdf.save('ikigai-chart.pdf');
     } catch (err) {
-      console.error('Error downloading PDF:', err);
+      console.error('Error generating PDF:', err);
       setError('Failed to download chart as PDF');
     }
   };
 
-  const handleStartJourney = () => {
-    router.push('/pillars/passion');
-  };
-
-  // If loading, show loading spinner
   if (loading || isLoading) {
     return (
       <Layout>
@@ -164,52 +248,41 @@ export default function IkigaiChart() {
     );
   }
 
-  // If not logged in, show auth modal
-  if (!user) {
+  if (error) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-12 max-w-3xl text-center">
-          <h1 className="font-noto text-3xl text-indigo mb-6">
-            Your Ikigai Chart
-          </h1>
-          
-          <p className="font-sawarabi text-sumi mb-8">
-            Please sign in or create an account to view your ikigai chart.
-          </p>
-          
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className="bg-indigo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300"
-          >
-            Sign In / Sign Up
-          </button>
+        <div className="container mx-auto px-4 py-12 max-w-4xl text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-noto text-red-600 mb-2">Error</h2>
+            <p className="font-sawarabi text-red-700">{error}</p>
+            <button
+              onClick={() => router.push('/')}
+              className="mt-4 bg-indigo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300"
+            >
+              Return to Home
+            </button>
+          </div>
         </div>
       </Layout>
     );
   }
 
-  // If no chart data, show empty state
   if (!chartData) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-12 max-w-3xl text-center">
+        <div className="container mx-auto px-4 py-12 max-w-4xl text-center">
           <h1 className="font-noto text-3xl text-indigo mb-6">
             Your Ikigai Chart
           </h1>
-          
-          <div className="bg-white rounded-lg shadow-md p-6 md:p-8 mb-8">
-            <p className="font-sawarabi text-sumi mb-6">
-              You haven't completed all four pillars of your ikigai journey yet.
-              Complete all four pillars to generate your personalized ikigai chart.
-            </p>
-            
-            <button
-              onClick={handleStartJourney}
-              className="bg-bamboo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300"
-            >
-              Start Your Journey
-            </button>
-          </div>
+          <p className="font-sawarabi text-sumi mb-8">
+            Please complete all four pillars of your Ikigai journey to view your chart.
+          </p>
+          <button
+            onClick={() => router.push('/pillars/passion')}
+            className="bg-sakura hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300"
+          >
+            Start Your Journey
+          </button>
         </div>
       </Layout>
     );
@@ -217,150 +290,139 @@ export default function IkigaiChart() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="font-noto text-3xl text-indigo text-center mb-6">
-          Your Ikigai Chart
-        </h1>
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-noto text-indigo mb-4">
+            Your Ikigai Chart
+          </h1>
+          <p className="text-lg font-sawarabi text-sumi">
+            Discover the intersection of what you love, what you're good at, what the world needs, and what you can be paid for
+          </p>
+        </div>
         
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-        
-        <div className="bg-white rounded-lg shadow-md p-6 md:p-8 mb-8">
-          <div className="mb-6 text-center">
-            <p className="font-sawarabi text-sumi">
-              Below is your personalized ikigai chart based on your responses.
-              Download it as a PNG or PDF to keep as a reminder of your purpose.
-            </p>
-          </div>
-          
-          {/* Ikigai Chart Visualization */}
-          <div 
-            ref={chartRef}
-            className="relative w-full h-96 md:h-[32rem] mb-8 bg-softWhite rounded-lg p-4"
-          >
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-4/5 h-4/5 relative">
-                {/* Passion Circle */}
-                <div className="absolute top-0 left-1/4 right-1/4 h-1/2 rounded-t-full bg-sakura bg-opacity-70 flex flex-col items-center justify-center p-4 overflow-hidden">
-                  <h3 className="font-noto text-lg font-bold mb-2">Passion</h3>
-                  <div className="text-xs md:text-sm font-sawarabi text-center max-h-full overflow-y-auto">
-                    {chartData.passion && chartData.passion.flatMap((q: any) => 
-                      q.responses.map((r: string, i: number) => (
-                        <div key={`passion-${q.questionId}-${i}`} className="mb-1 px-2 py-1 bg-white bg-opacity-30 rounded">
-                          {r}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                
-                {/* Profession Circle */}
-                <div className="absolute top-1/4 right-0 bottom-1/4 w-1/2 rounded-r-full bg-bamboo bg-opacity-70 flex flex-col items-center justify-center p-4 overflow-hidden">
-                  <h3 className="font-noto text-lg font-bold mb-2">Profession</h3>
-                  <div className="text-xs md:text-sm font-sawarabi text-center max-h-full overflow-y-auto">
-                    {chartData.profession && chartData.profession.flatMap((q: any) => 
-                      q.responses.map((r: string, i: number) => (
-                        <div key={`profession-${q.questionId}-${i}`} className="mb-1 px-2 py-1 bg-white bg-opacity-30 rounded">
-                          {r}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                
-                {/* Mission Circle */}
-                <div className="absolute top-1/4 left-0 bottom-1/4 w-1/2 rounded-l-full bg-indigo bg-opacity-70 flex flex-col items-center justify-center p-4 overflow-hidden">
-                  <h3 className="font-noto text-lg font-bold mb-2 text-white">Mission</h3>
-                  <div className="text-xs md:text-sm font-sawarabi text-white text-center max-h-full overflow-y-auto">
-                    {chartData.mission && chartData.mission.flatMap((q: any) => 
-                      q.responses.map((r: string, i: number) => (
-                        <div key={`mission-${q.questionId}-${i}`} className="mb-1 px-2 py-1 bg-white bg-opacity-30 rounded text-sumi">
-                          {r}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                
-                {/* Vocation Circle */}
-                <div className="absolute bottom-0 left-1/4 right-1/4 h-1/2 rounded-b-full bg-gold bg-opacity-70 flex flex-col items-center justify-center p-4 overflow-hidden">
-                  <h3 className="font-noto text-lg font-bold mb-2">Vocation</h3>
-                  <div className="text-xs md:text-sm font-sawarabi text-center max-h-full overflow-y-auto">
-                    {chartData.vocation && chartData.vocation.flatMap((q: any) => 
-                      q.responses.map((r: string, i: number) => (
-                        <div key={`vocation-${q.questionId}-${i}`} className="mb-1 px-2 py-1 bg-white bg-opacity-30 rounded">
-                          {r}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                
-                {/* Center - Ikigai */}
-                <div className="absolute top-1/4 left-1/4 right-1/4 bottom-1/4 rounded-full bg-white flex items-center justify-center shadow-lg">
-                  <div className="text-center">
-                    <h2 className="font-noto text-xl md:text-2xl font-bold text-sumi">IKIGAI</h2>
-                    <p className="font-sawarabi text-xs md:text-sm text-gray-600">Your Purpose</p>
-                    <p className="font-hina text-xs md:text-sm text-indigo mt-2">{user.email}</p>
-                  </div>
-                </div>
-              </div>
+        {/* Ikigai Chart */}
+        <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 md:p-8 mb-8">
+          <div ref={chartRef} className="relative w-full aspect-square max-w-3xl mx-auto">
+            {/* Passion Circle */}
+            <div className="absolute top-0 left-1/4 w-1/2 h-1/2 -translate-x-1/4 -translate-y-0 rounded-full bg-sakura bg-opacity-30 flex flex-col justify-center items-center p-4 overflow-hidden">
+              <h3 className="font-noto text-sakura text-lg mb-2">Passion</h3>
+              <p className="font-sawarabi text-xs text-center">What you LOVE</p>
+              <ul className="text-xs mt-2 list-disc pl-4 overflow-y-auto max-h-20">
+                {chartData.passion.slice(0, 3).map((item: string, index: number) => (
+                  <li key={`passion-${index}`} className="mb-1">{item}</li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Profession Circle */}
+            <div className="absolute top-0 right-1/4 w-1/2 h-1/2 translate-x-1/4 -translate-y-0 rounded-full bg-gold bg-opacity-30 flex flex-col justify-center items-center p-4 overflow-hidden">
+              <h3 className="font-noto text-gold text-lg mb-2">Profession</h3>
+              <p className="font-sawarabi text-xs text-center">What you're GOOD AT</p>
+              <ul className="text-xs mt-2 list-disc pl-4 overflow-y-auto max-h-20">
+                {chartData.profession.slice(0, 3).map((item: string, index: number) => (
+                  <li key={`profession-${index}`} className="mb-1">{item}</li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Mission Circle */}
+            <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2 -translate-x-1/4 translate-y-0 rounded-full bg-bamboo bg-opacity-30 flex flex-col justify-center items-center p-4 overflow-hidden">
+              <h3 className="font-noto text-bamboo text-lg mb-2">Mission</h3>
+              <p className="font-sawarabi text-xs text-center">What the world NEEDS</p>
+              <ul className="text-xs mt-2 list-disc pl-4 overflow-y-auto max-h-20">
+                {chartData.mission.slice(0, 3).map((item: string, index: number) => (
+                  <li key={`mission-${index}`} className="mb-1">{item}</li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Vocation Circle */}
+            <div className="absolute bottom-0 right-1/4 w-1/2 h-1/2 translate-x-1/4 translate-y-0 rounded-full bg-indigo bg-opacity-30 flex flex-col justify-center items-center p-4 overflow-hidden">
+              <h3 className="font-noto text-indigo text-lg mb-2">Vocation</h3>
+              <p className="font-sawarabi text-xs text-center">What you can be PAID FOR</p>
+              <ul className="text-xs mt-2 list-disc pl-4 overflow-y-auto max-h-20">
+                {chartData.vocation.slice(0, 3).map((item: string, index: number) => (
+                  <li key={`vocation-${index}`} className="mb-1">{item}</li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Ikigai Center */}
+            <div className="absolute top-1/2 left-1/2 w-1/4 h-1/4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-lg flex flex-col justify-center items-center p-2">
+              <h3 className="font-noto text-sumi text-sm mb-1">IKIGAI</h3>
+              <ul className="text-xs text-center overflow-y-auto max-h-16">
+                {chartData.ikigai.length > 0 ? (
+                  chartData.ikigai.slice(0, 2).map((item: string, index: number) => (
+                    <li key={`ikigai-${index}`} className="mb-1">{item}</li>
+                  ))
+                ) : (
+                  <li className="italic text-gray-500">Keep exploring to find your Ikigai</li>
+                )}
+              </ul>
             </div>
           </div>
           
-          {/* Download Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+          <div className="mt-8 text-center">
             <button
-              onClick={handleDownloadPNG}
-              className="bg-indigo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300 flex items-center justify-center"
+              onClick={downloadPDF}
+              className="bg-indigo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-              Download as PNG
-            </button>
-            
-            <button
-              onClick={handleDownloadPDF}
-              className="bg-bamboo hover:bg-opacity-90 text-white font-sawarabi py-2 px-6 rounded-md transition duration-300 flex items-center justify-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-              </svg>
               Download as PDF
             </button>
           </div>
         </div>
         
-        {/* Workplace Growth Tips */}
-        {tips.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
-            <h2 className="font-noto text-2xl text-bamboo mb-6 text-center">
-              Workplace Growth Tips
-            </h2>
-            
-            <div className="grid md:grid-cols-2 gap-4">
-              {tips.map((tip, index) => (
-                <div 
-                  key={index}
-                  className={`p-4 rounded-lg ${
-                    tip.category === 'passion' ? 'bg-sakura bg-opacity-20' :
-                    tip.category === 'profession' ? 'bg-bamboo bg-opacity-20' :
-                    tip.category === 'mission' ? 'bg-indigo bg-opacity-20' :
-                    tip.category === 'vocation' ? 'bg-gold bg-opacity-20' :
-                    'bg-gray-100'
-                  }`}
-                >
-                  <p className="font-sawarabi">{tip.tip}</p>
-                  <span className="text-xs text-gray-500 mt-2 block capitalize">{tip.category}</span>
-                </div>
-              ))}
-            </div>
+        {/* Tips Section */}
+        <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 md:p-8 mb-8">
+          <h2 className="text-2xl font-noto text-indigo mb-4 text-center">
+            Tips for Your Ikigai Journey
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tips.map((tip, index) => (
+              <div 
+                key={index}
+                className={`p-4 rounded-lg ${
+                  tip.category === 'ikigai' ? 'bg-sumi bg-opacity-10' :
+                  tip.category === 'love' ? 'bg-sakura bg-opacity-10' :
+                  tip.category === 'good' ? 'bg-gold bg-opacity-10' :
+                  tip.category === 'paid' ? 'bg-indigo bg-opacity-10' :
+                  tip.category === 'needs' ? 'bg-bamboo bg-opacity-10' :
+                  'bg-gray-100'
+                }`}
+              >
+                <p className="font-sawarabi">{tip.tip}</p>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+        
+        {/* Next Steps */}
+        <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 md:p-8">
+          <h2 className="text-2xl font-noto text-indigo mb-4 text-center">
+            Next Steps
+          </h2>
+          
+          <p className="font-sawarabi text-sumi mb-6 text-center">
+            Your Ikigai journey doesn't end here. Continue to explore and refine your understanding.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            <button
+              onClick={() => router.push('/pillars/passion')}
+              className="bg-sakura bg-opacity-90 hover:bg-opacity-100 text-white font-sawarabi py-3 px-6 rounded-md transition duration-300"
+            >
+              Revisit Your Answers
+            </button>
+            
+            <button
+              onClick={() => router.push('/')}
+              className="bg-indigo bg-opacity-90 hover:bg-opacity-100 text-white font-sawarabi py-3 px-6 rounded-md transition duration-300"
+            >
+              Return to Home
+            </button>
+          </div>
+        </div>
       </div>
     </Layout>
   );
