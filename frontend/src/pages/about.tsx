@@ -1,115 +1,113 @@
 import React from 'react';
 import Layout from '../components/Layout';
+import Link from 'next/link';
+import { useUser } from '../context/UserContext';
 
 export default function About() {
+  const { user } = useUser();
+
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="font-noto text-4xl text-indigo text-center mb-8">
-          Understanding Ikigai
-        </h1>
-        
-        <div className="bg-white rounded-lg shadow-md p-6 md:p-8 mb-10">
-          <h2 className="font-noto text-2xl text-bamboo mb-4">
-            What is Ikigai?
-          </h2>
+      <div className="max-w-4xl mx-auto">
+        <div 
+          className="bg-white bg-opacity-80 shadow-lg rounded-lg p-8 mb-8"
+          style={{ 
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.5s ease-in-out'
+          }}
+        >
+          <h1 className="text-3xl md:text-4xl font-noto text-indigo mb-6">Understanding Ikigai</h1>
           
-          <p className="font-sawarabi text-sumi mb-6">
-            Ikigai (生き甲斐) is a Japanese concept that translates roughly to "a reason for being" or "a reason to get up in the morning." 
-            It represents the intersection of four fundamental elements that create meaning and purpose in one's life.
-          </p>
-          
-          <div className="relative w-full h-96 md:h-[500px] my-12">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-full max-w-[600px] h-full max-h-[500px]">
-                <svg viewBox="0 0 500 500" className="w-full h-full">
-                  {/* Passion Circle (What you love) */}
-                  <circle cx="250" cy="175" r="125" fill="#F6CECE" fillOpacity="0.7" />
-                  <text x="250" y="110" textAnchor="middle" className="font-noto text-base md:text-lg font-semibold">What you LOVE</text>
-                  
-                  {/* Profession Circle (What you're good at) */}
-                  <circle cx="325" cy="250" r="125" fill="#7BA17D" fillOpacity="0.7" />
-                  <text x="370" y="250" textAnchor="middle" className="font-noto text-base md:text-lg font-semibold">What you're GOOD AT</text>
-                  
-                  {/* Mission Circle (What the world needs) */}
-                  <circle cx="175" cy="250" r="125" fill="#3F4B83" fillOpacity="0.7" />
-                  <text x="130" y="250" textAnchor="middle" className="font-noto text-base md:text-lg font-semibold" fill="white">What the world NEEDS</text>
-                  
-                  {/* Vocation Circle (What you can be paid for) */}
-                  <circle cx="250" cy="325" r="125" fill="#D4AF37" fillOpacity="0.7" />
-                  <text x="250" y="390" textAnchor="middle" className="font-noto text-base md:text-lg font-semibold">What you can be PAID FOR</text>
-                  
-                  {/* Center - Ikigai */}
-                  <text x="250" y="250" textAnchor="middle" className="font-noto text-2xl md:text-3xl font-bold">IKIGAI</text>
-                </svg>
+          <div className="max-w-none">
+            <p className="mb-4">
+              Ikigai (生き甲斐) is a Japanese concept that means "a reason for being." It is believed that everyone has an ikigai—a reason to jump out of bed each morning.
+            </p>
+            
+            <p className="mb-6">
+              The concept originated in Okinawa, Japan, where it is believed to contribute to the longevity of its residents. Finding your ikigai is considered the convergence of four primary elements:
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div 
+                className="bg-sakura bg-opacity-60 p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.03]"
+              >
+                <h3 className="text-xl font-noto mb-2">What You Love</h3>
+                <p className="text-sm">
+                  Activities and experiences that bring you joy, fulfillment, and energy. These are things you would do even if you weren't paid.
+                </p>
+              </div>
+              
+              <div 
+                className="bg-bamboo bg-opacity-60 p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.03]"
+              >
+                <h3 className="text-xl font-noto mb-2 text-white">What You're Good At</h3>
+                <p className="text-sm text-white">
+                  Your natural talents, learned skills, and areas where you excel. These often come easily to you and receive recognition from others.
+                </p>
+              </div>
+              
+              <div 
+                className="bg-indigo bg-opacity-60 p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.03]"
+              >
+                <h3 className="text-xl font-noto mb-2 text-white">What the World Needs</h3>
+                <p className="text-sm text-white">
+                  Services, solutions, or contributions that address problems or needs in society. This is how your existence improves the lives of others.
+                </p>
+              </div>
+              
+              <div 
+                className="bg-gold bg-opacity-60 p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.03]"
+              >
+                <h3 className="text-xl font-noto mb-2">What You Can Be Paid For</h3>
+                <p className="text-sm">
+                  Activities others value enough to compensate you for. This allows you to sustain yourself while doing what you love.
+                </p>
               </div>
             </div>
-          </div>
-          
-          <h2 className="font-noto text-2xl text-bamboo mb-4">
-            The Four Pillars of Ikigai
-          </h2>
-          
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-sakura bg-opacity-20 p-4 rounded-lg">
-              <h3 className="font-noto text-xl mb-2">What you love (Passion)</h3>
-              <p className="font-sawarabi">Activities and interests that bring you joy and fulfillment.</p>
-            </div>
             
-            <div className="bg-bamboo bg-opacity-20 p-4 rounded-lg">
-              <h3 className="font-noto text-xl mb-2">What you are good at (Profession)</h3>
-              <p className="font-sawarabi">Your skills, talents, and strengths that you've developed.</p>
-            </div>
+            <h2 className="text-2xl font-noto text-indigo mb-4">The Intersections of Ikigai</h2>
             
-            <div className="bg-indigo bg-opacity-20 p-4 rounded-lg">
-              <h3 className="font-noto text-xl mb-2">What the world needs (Mission)</h3>
-              <p className="font-sawarabi">How you can contribute to society and make a positive impact.</p>
-            </div>
+            <p className="mb-4">
+              When these four elements overlap, meaningful combinations emerge:
+            </p>
             
-            <div className="bg-gold bg-opacity-20 p-4 rounded-lg">
-              <h3 className="font-noto text-xl mb-2">What you can be paid for (Vocation)</h3>
-              <p className="font-sawarabi">Activities that provide financial stability and support.</p>
-            </div>
-          </div>
-          
-          <h2 className="font-noto text-2xl text-bamboo mb-4">
-            Finding Your Ikigai
-          </h2>
-          
-          <p className="font-sawarabi text-sumi mb-6">
-            When these four elements overlap, you discover your ikigai - your purpose or reason for being. 
-            The concept originated in Okinawa, Japan, where it has been associated with longevity and well-being.
-          </p>
-          
-          <p className="font-sawarabi text-sumi mb-6">
-            Unlike Western concepts of purpose that often focus on career success or material wealth, 
-            ikigai encompasses all aspects of life. It's about finding joy and meaning in daily activities, 
-            relationships, and contributions to community.
-          </p>
-          
-          <div className="bg-softWhite border-l-4 border-indigo p-4 italic mb-8">
-            <p className="font-hina text-lg">
-              "Only staying active will make you want to live a hundred years."
-              <span className="block text-right mt-2">— Japanese proverb</span>
+            <ul className="list-disc pl-6 mb-6 space-y-2">
+              <li><strong className="text-sakura">Passion:</strong> What you love + What you're good at</li>
+              <li><strong className="text-indigo">Mission:</strong> What you love + What the world needs</li>
+              <li><strong className="text-gold">Vocation:</strong> What you're good at + What you can be paid for</li>
+              <li><strong className="text-bamboo">Profession:</strong> What the world needs + What you can be paid for</li>
+            </ul>
+            
+            <p className="mb-6">
+              At the center where all four elements converge lies your ikigai—your optimal path that combines passion, mission, profession, and vocation. Finding this sweet spot can lead to a more fulfilled and purposeful life.
+            </p>
+            
+            <h2 className="text-2xl font-noto text-indigo mb-4">Your Ikigai Journey</h2>
+            
+            <p className="mb-4">
+              Discovering your ikigai is a personal journey of self-reflection and exploration. Through this application, you'll explore each of the four elements through guided questions and receive AI-assisted insights to help you identify patterns and connections.
+            </p>
+            
+            <p>
+              As you complete each pillar, you'll gradually build your personalized ikigai diagram—a visual representation of your purpose that you can download and reference as you navigate life and career decisions.
             </p>
           </div>
-          
-          <h2 className="font-noto text-2xl text-bamboo mb-4">
-            Benefits of Finding Your Ikigai
-          </h2>
-          
-          <ul className="list-disc pl-6 font-sawarabi text-sumi mb-8 space-y-2">
-            <li><strong>Improved mental health:</strong> A sense of purpose is linked to reduced depression and anxiety</li>
-            <li><strong>Increased longevity:</strong> Studies suggest people with a strong sense of purpose tend to live longer</li>
-            <li><strong>Greater resilience:</strong> Helps navigate life's challenges with more determination</li>
-            <li><strong>Enhanced daily satisfaction:</strong> Brings fulfillment to everyday activities</li>
-            <li><strong>Better work-life balance:</strong> Integrates passion, profession, mission, and vocation</li>
-          </ul>
-          
-          <p className="font-sawarabi text-sumi">
-            Ready to discover your ikigai? Our guided journey will help you explore each pillar 
-            and find the beautiful intersection that represents your unique purpose.
-          </p>
+        </div>
+        
+        <div className="flex justify-center mb-16">
+          {user && user.has_completed_questions ? (
+            <Link href="/ikigai-chart">
+              <a className="bg-bamboo hover:bg-opacity-90 text-white font-sawarabi py-3 px-6 rounded-md transition duration-300 shadow-lg transform hover:scale-105">
+                View Your Ikigai Chart
+              </a>
+            </Link>
+          ) : (
+            <Link href="/pillars/passion">
+              <a className="bg-bamboo hover:bg-opacity-90 text-white font-sawarabi py-3 px-6 rounded-md transition duration-300 shadow-lg transform hover:scale-105">
+                Begin Exploring Your Ikigai
+              </a>
+            </Link>
+          )}
         </div>
       </div>
     </Layout>
