@@ -46,7 +46,7 @@ export default function Home() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/japanese_garden.jpg"
+            src="/images/zen_garden_bg.jpg"
             alt="Japanese Garden"
             layout="fill"
             objectFit="cover"
@@ -62,7 +62,7 @@ export default function Home() {
           </h1>
           
           <p className="mb-8 max-w-2xl text-lg md:text-xl text-softWhite font-sawarabi">
-            Explore the ancient Japanese concept of finding purpose at the intersection of what you love, what you're good at, what the world needs, and what you can be paid for.
+            Explore the ancient Japanese concept of finding purpose.
           </p>
           
           <button
@@ -71,28 +71,6 @@ export default function Home() {
           >
             Begin Your Journey
           </button>
-          
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl">
-            <div className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">
-              <h2 className="text-2xl font-noto text-sakura mb-3">Passion</h2>
-              <p className="text-sumi">What you love and what you're good at</p>
-            </div>
-            
-            <div className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">
-              <h2 className="text-2xl font-noto text-bamboo mb-3">Mission</h2>
-              <p className="text-sumi">What you love and what the world needs</p>
-            </div>
-            
-            <div className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">
-              <h2 className="text-2xl font-noto text-indigo mb-3">Vocation</h2>
-              <p className="text-sumi">What you're good at and what you can be paid for</p>
-            </div>
-            
-            <div className="bg-white bg-opacity-90 p-6 rounded-lg shadow-lg transform transition duration-300 hover:scale-105">
-              <h2 className="text-2xl font-noto text-gold mb-3">Profession</h2>
-              <p className="text-sumi">What the world needs and what you can be paid for</p>
-            </div>
-          </div>
         </div>
       </div>
 
