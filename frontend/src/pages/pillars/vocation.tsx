@@ -3,18 +3,17 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import QuestionModule from '@/components/QuestionModule';
 import PillarIcon from '@/components/PillarIcon';
-import ProgressTracker from '@/components/ProgressTracker';
 import { useSimpleUser } from '@/context/SimpleUserContext';
 
-// Define questions for the Vocation pillar - reduced to 2 most relevant questions
+// Define questions for the Vocation pillar
 const vocationQuestions = [
   {
     id: 'vocation-1',
-    text: 'What skills or services do people value enough to pay you for?',
+    text: 'What work could you do that would also serve a greater purpose?',
   },
   {
     id: 'vocation-2',
-    text: 'What work would you do that aligns with your values and provides financial stability?',
+    text: 'How can your skills be applied to address needs in the world?',
   },
 ];
 
@@ -69,8 +68,12 @@ export default function VocationPillar() {
       }
     }
     
-    // Navigate to the dashboard (or wherever is appropriate after completing all pillars)
-    router.push('/dashboard');
+    // Navigate to the next pillar or ikigai chart if all are completed
+    if (allPillarsCompleted) {
+      router.push('/ikigai-chart');
+    } else {
+      router.push('/');
+    }
   };
 
   // If loading, show loading spinner
@@ -78,7 +81,7 @@ export default function VocationPillar() {
     return (
       <Layout>
         <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bamboo"></div>
         </div>
       </Layout>
     );
@@ -87,35 +90,29 @@ export default function VocationPillar() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
-        {/* Progress Tracker */}
-        <ProgressTracker userId={user?.id} />
-        
-        <div 
-          className="bg-white bg-opacity-80 shadow-lg rounded-lg p-8 mb-8"
-          style={{ 
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.5s ease-in-out'
-          }}
-        >
-          <div className="flex items-center justify-center mb-6">
+        {/* Pillar Header */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="flex items-center mb-2">
             <PillarIcon pillar="vocation" size="lg" className="mr-4" />
-            <h1 className="text-3xl md:text-4xl font-noto text-gold text-center">
+            <h1 className="text-3xl md:text-4xl font-noto text-bamboo">
               Vocation
             </h1>
           </div>
-          
-          <p className="text-lg font-sawarabi text-sumi mb-8 text-center">
-            Discover how to align your skills with financial sustainability
+          <p className="text-lg font-sawarabi text-sumi text-center">
+            Find where your skills meet the world's needs
           </p>
-          
-          <QuestionModule
-            questions={vocationQuestions}
-            pillarName="vocation"
-            pillarColor="gold"
-            onComplete={handleComplete}
-            userId={user?.id}
-          />
         </div>
+        
+        {/* Question Module */}
+        <QuestionModule
+          questions={vocationQuestions}
+          pillarName="vocation"
+          pillarColor="bamboo"
+          onComplete={handleComplete}
+          userId={user?.id}
+          totalQuestions={8}
+          questionOffset={6}
+        />
       </div>
     </Layout>
   );

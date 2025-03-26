@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import QuestionModule from '@/components/QuestionModule';
 import PillarIcon from '@/components/PillarIcon';
-import ProgressTracker from '@/components/ProgressTracker';
 import { useSimpleUser } from '@/context/SimpleUserContext';
 
 // Define questions for the Passion pillar - reduced to 2 most relevant questions
@@ -87,35 +86,29 @@ export default function PassionPillar() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
-        {/* Progress Tracker */}
-        <ProgressTracker userId={user?.id} />
-        
-        <div 
-          className="bg-white bg-opacity-80 shadow-lg rounded-lg p-8 mb-8"
-          style={{ 
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.5s ease-in-out'
-          }}
-        >
-          <div className="flex items-center justify-center mb-6">
+        {/* Pillar Header */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="flex items-center mb-2">
             <PillarIcon pillar="passion" size="lg" className="mr-4" />
-            <h1 className="text-3xl md:text-4xl font-noto text-sakura text-center">
+            <h1 className="text-3xl md:text-4xl font-noto text-sakura">
               Passion
             </h1>
           </div>
-          
-          <p className="text-lg font-sawarabi text-sumi mb-8 text-center">
+          <p className="text-lg font-sawarabi text-sumi text-center">
             Discover what you love and what you're good at
           </p>
-          
-          <QuestionModule
-            questions={passionQuestions}
-            pillarName="passion"
-            pillarColor="sakura"
-            onComplete={handleComplete}
-            userId={user?.id}
-          />
         </div>
+        
+        {/* Question Module */}
+        <QuestionModule
+          questions={passionQuestions}
+          pillarName="passion"
+          pillarColor="sakura"
+          onComplete={handleComplete}
+          userId={user?.id}
+          totalQuestions={8}
+          questionOffset={0}
+        />
       </div>
     </Layout>
   );

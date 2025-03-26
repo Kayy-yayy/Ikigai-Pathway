@@ -2,15 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSimpleUser } from '../context/SimpleUserContext';
 import { FaQuestionCircle } from 'react-icons/fa';
 
+type Question = {
+  id: string;
+  text: string;
+};
+
 type QuestionModuleProps = {
   pillarName: string;
   pillarColor: string;
-  questions: {
-    id: string;
-    text: string;
-  }[];
+  questions: Question[];
   onComplete: () => void;
   userId?: string;
+  totalQuestions?: number; // Total questions across all pillars
+  questionOffset?: number; // Offset for this pillar's questions
 };
 
 // Help tooltips for each pillar
@@ -38,7 +42,9 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
   pillarColor, 
   questions, 
   onComplete,
-  userId 
+  userId,
+  totalQuestions = 8, // Default to 8 (2 per pillar)
+  questionOffset = 0, // Default to 0 (first pillar)
 }) => {
   const { user } = useSimpleUser();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -310,6 +316,10 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
     };
   }, [tooltipRef]);
 
+  // Calculate the global question number (across all pillars)
+  const globalQuestionNumber = questionOffset + currentQuestionIndex + 1;
+  const globalProgressPercentage = Math.round((globalQuestionNumber / totalQuestions) * 100);
+
   // If all questions are already answered, show a summary
   if (isCompleted) {
     return (
@@ -365,10 +375,10 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
       <div className="mb-6">
         <div className="flex items-center mb-2">
           <span className="font-sawarabi text-sm text-gray-600">
-            Question {currentQuestionIndex + 1} of {questions.length}
+            Question {globalQuestionNumber} of {totalQuestions}
           </span>
-          <span className="font-sawarabi text-sm text-gray-600">
-            {Math.round(((currentQuestionIndex + 1) / questions.length) * 100)}% Complete
+          <span className="ml-auto font-sawarabi text-sm text-gray-600">
+            {globalProgressPercentage}% Complete
           </span>
           <div className="relative ml-3" ref={tooltipRef}>
             <button 
@@ -397,8 +407,8 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
         
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className={`bg-${pillarColor} h-2 rounded-full`}
-            style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+            className={`bg-${pillarColor} h-2 rounded-full transition-all duration-500 ease-in-out`}
+            style={{ width: `${globalProgressPercentage}%` }}
           ></div>
         </div>
       </div>
@@ -489,15 +499,19 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
       
       {/* Navigation buttons */}
       <div className="flex justify-between">
-        <button
-          onClick={handlePrevious}
-          className={`bg-gray-200 hover:bg-gray-300 text-gray-800 font-sawarabi py-2 px-6 rounded-md transition duration-300 ${
-            currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-          disabled={currentQuestionIndex === 0 || isSaving}
-        >
-          Previous
-        </button>
+        {currentQuestionIndex > 0 ? (
+          <button
+            onClick={handlePrevious}
+            className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-md font-sawarabi transition duration-300 hover:bg-gray-300 ${
+              isSaving ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={isSaving}
+          >
+            Previous
+          </button>
+        ) : (
+          <div></div> // Empty div to maintain layout when button is hidden
+        )}
         
         <button
           onClick={handleNext}
