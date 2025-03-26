@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSimpleUser } from '../context/SimpleUserContext';
+import { FaQuestionCircle } from 'react-icons/fa';
 
 type QuestionModuleProps = {
   pillarName: string;
@@ -10,6 +11,26 @@ type QuestionModuleProps = {
   }[];
   onComplete: () => void;
   userId?: string;
+};
+
+// Help tooltips for each pillar
+const pillarTooltips = {
+  passion: {
+    default: "Passion is what you love to do. Think about activities that bring you joy and that you'd do even if you weren't paid.",
+    examples: ["I love teaching others", "I enjoy creating art", "I feel energized when solving puzzles"]
+  },
+  profession: {
+    default: "Profession is what you're good at. Consider your skills, talents, and areas where you excel.",
+    examples: ["I'm skilled at analyzing data", "I excel at public speaking", "I'm good at organizing events"]
+  },
+  mission: {
+    default: "Mission is what the world needs. Think about problems you see in society that you care about solving.",
+    examples: ["The world needs more environmental protection", "Communities need better education access", "People need mental health support"]
+  },
+  vocation: {
+    default: "Vocation is what you can be paid for. Consider skills and services that people would compensate you for.",
+    examples: ["People would pay me for my design skills", "I could be compensated for my coaching abilities", "My technical expertise is marketable"]
+  }
 };
 
 const QuestionModule: React.FC<QuestionModuleProps> = ({ 
@@ -28,6 +49,8 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -186,17 +209,35 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
         return false;
       }
       
+      // Ensure proper JSON formatting by using JSON.stringify with replacer function
+      // to handle any special characters that might cause JSON parsing issues
+      const body = JSON.stringify(filteredResponses, (key, value) => {
+        // If the value is a string, ensure it's properly escaped
+        if (typeof value === 'string') {
+          return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        }
+        return value;
+      });
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/responses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(filteredResponses),
+        body: body,
       });
       
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to save responses');
+        const errorText = await res.text();
+        let errorMessage = 'Failed to save responses';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use the raw error text
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       
       return true;
@@ -255,6 +296,20 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
     onComplete();
   };
 
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+        setShowTooltip(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [tooltipRef]);
+
   // If all questions are already answered, show a summary
   if (isCompleted) {
     return (
@@ -308,13 +363,36 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
     <div className="bg-white rounded-lg shadow-md p-6">
       {/* Progress indicator */}
       <div className="mb-6">
-        <div className="flex justify-between mb-2">
+        <div className="flex items-center mb-2">
           <span className="font-sawarabi text-sm text-gray-600">
             Question {currentQuestionIndex + 1} of {questions.length}
           </span>
           <span className="font-sawarabi text-sm text-gray-600">
             {Math.round(((currentQuestionIndex + 1) / questions.length) * 100)}% Complete
           </span>
+          <div className="relative ml-3" ref={tooltipRef}>
+            <button 
+              className="text-gray-500 hover:text-indigo transition-colors duration-300"
+              onClick={() => setShowTooltip(!showTooltip)}
+              aria-label="Help"
+            >
+              <FaQuestionCircle size={20} />
+            </button>
+            {showTooltip && (
+              <div className="absolute z-10 right-0 mt-2 w-64 bg-white rounded-lg shadow-lg p-4 border border-gray-200 animate-fade-in">
+                <h4 className="font-noto text-sm mb-2 text-indigo">About {pillarName}</h4>
+                <p className="text-sm mb-2">{pillarTooltips[pillarName.toLowerCase() as keyof typeof pillarTooltips]?.default || "Think about what matters to you in this area."}</p>
+                <div className="mt-3">
+                  <h5 className="text-xs font-bold mb-1">Examples:</h5>
+                  <ul className="text-xs text-gray-600 list-disc pl-4">
+                    {pillarTooltips[pillarName.toLowerCase() as keyof typeof pillarTooltips]?.examples.map((example, index) => (
+                      <li key={index}>{example}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -361,19 +439,18 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
         {/* Current responses */}
         {responses[currentQuestion.id] && responses[currentQuestion.id].length > 0 && (
           <div className="mb-6">
-            <h3 className="font-noto text-lg mb-2">Your responses:</h3>
-            
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col gap-3">
               {responses[currentQuestion.id].map((response, index) => (
                 <div 
                   key={index}
-                  className={`bg-${pillarColor} bg-opacity-20 rounded-full px-3 py-1 flex items-center`}
+                  className={`bg-${pillarColor} bg-opacity-20 rounded-lg px-4 py-3 flex items-center shadow-sm transform transition-all duration-300 hover:shadow-md hover:translate-x-1`}
                 >
-                  <span className="font-sawarabi text-sm">{response}</span>
+                  <span className="font-sawarabi">{index + 1}. {response}</span>
                   <button
                     onClick={() => removeResponse(currentQuestion.id, index)}
-                    className="ml-2 text-gray-500 hover:text-red-500"
+                    className="ml-auto text-gray-500 hover:text-red-500 transition-colors duration-300"
                     disabled={isSaving}
+                    aria-label="Remove response"
                   >
                     &times;
                   </button>
@@ -383,25 +460,31 @@ const QuestionModule: React.FC<QuestionModuleProps> = ({
           </div>
         )}
         
-        {/* Suggestions */}
-        {suggestions.length > 0 && (
-          <div className="mb-6">
-            <h3 className="font-noto text-lg mb-2">Suggestions:</h3>
-            
+        {/* AI Suggestions */}
+        <div className="mb-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <h3 className="font-noto text-sm mb-3 flex items-center">
+            <svg className="w-5 h-5 mr-2 text-indigo" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+            </svg>
+            AI Suggestions:
+          </h3>
+          {suggestions.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {suggestions.map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => addSuggestion(suggestion)}
-                  className="bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 font-sawarabi text-sm transition duration-300"
+                  className="bg-white hover:bg-gray-100 border border-gray-300 rounded-full px-3 py-1 font-sawarabi text-sm transition duration-300 transform hover:scale-105"
                   disabled={isSaving}
                 >
                   {suggestion}
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-sm text-gray-500 italic">Type in the input field to get AI suggestions</p>
+          )}
+        </div>
       </div>
       
       {/* Navigation buttons */}

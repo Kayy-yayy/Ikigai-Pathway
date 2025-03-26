@@ -2,25 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import QuestionModule from '@/components/QuestionModule';
+import PillarIcon from '@/components/PillarIcon';
+import ProgressTracker from '@/components/ProgressTracker';
 import { useSimpleUser } from '@/context/SimpleUserContext';
 
-// Define questions for the Profession pillar
+// Define questions for the Profession pillar - reduced to 2 most relevant questions
 const professionQuestions = [
   {
     id: 'profession-1',
-    text: 'What skills come naturally to you that others find difficult?',
+    text: 'What skills have you mastered or are working to master?',
   },
   {
     id: 'profession-2',
-    text: 'What accomplishments are you most proud of in your life?',
-  },
-  {
-    id: 'profession-3',
-    text: 'What do people often compliment you on or come to you for help with?',
-  },
-  {
-    id: 'profession-4',
-    text: 'What skills have you developed through dedicated practice?',
+    text: 'What do others recognize you as being exceptionally good at?',
   },
 ];
 
@@ -84,7 +78,7 @@ export default function ProfessionPillar() {
     return (
       <Layout>
         <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bamboo"></div>
         </div>
       </Layout>
     );
@@ -92,32 +86,32 @@ export default function ProfessionPillar() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-noto text-gold mb-4">
-            Profession
-          </h1>
-          <p className="text-lg font-sawarabi text-sumi">
-            Discover what you're good at and what the world will pay you for
-          </p>
-        </div>
+      <div className="max-w-4xl mx-auto">
+        {/* Progress Tracker */}
+        <ProgressTracker userId={user?.id} />
         
-        <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 md:p-8 mb-8">
-          <div className="mb-6">
-            <h2 className="text-xl font-noto text-gold mb-2">
-              What is Profession in Ikigai?
-            </h2>
-            <p className="font-sawarabi text-sumi">
-              In the Ikigai framework, profession represents the intersection of what you're good at and what the world will pay you for. 
-              These are your marketable skills and talents that can provide financial stability.
-              Identifying your professional strengths helps you find work that rewards your capabilities.
-            </p>
+        <div 
+          className="bg-white bg-opacity-80 shadow-lg rounded-lg p-8 mb-8"
+          style={{ 
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.5s ease-in-out'
+          }}
+        >
+          <div className="flex items-center justify-center mb-6">
+            <PillarIcon pillar="profession" size="lg" className="mr-4" />
+            <h1 className="text-3xl md:text-4xl font-noto text-bamboo text-center">
+              Profession
+            </h1>
           </div>
+          
+          <p className="text-lg font-sawarabi text-sumi mb-8 text-center">
+            Identify what you're skilled at and can offer to the world
+          </p>
           
           <QuestionModule
             questions={professionQuestions}
             pillarName="profession"
-            pillarColor="gold"
+            pillarColor="bamboo"
             onComplete={handleComplete}
             userId={user?.id}
           />

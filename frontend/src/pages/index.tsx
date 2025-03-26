@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Layout from '../components/Layout';
 import UserInfoModal from '../components/UserInfoModal';
+import ProgressTracker from '../components/ProgressTracker';
 import { useSimpleUser } from '../context/SimpleUserContext';
 
 export default function Home() {
@@ -65,11 +66,17 @@ export default function Home() {
             Explore the ancient Japanese concept of finding purpose.
           </p>
           
+          {user && (
+            <div className="mb-8 bg-white bg-opacity-90 rounded-lg shadow-md p-4 max-w-md w-full">
+              <ProgressTracker userId={user.id} compact={true} />
+            </div>
+          )}
+          
           <button
             onClick={handleBeginJourney}
             className="px-8 py-3 bg-bamboo text-white rounded-md shadow-lg font-sawarabi text-lg transition duration-300 transform hover:scale-105 hover:bg-opacity-90"
           >
-            Begin Your Journey
+            {user ? 'Continue Your Journey' : 'Begin Your Journey'}
           </button>
         </div>
       </div>

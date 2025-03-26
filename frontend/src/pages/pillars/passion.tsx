@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import QuestionModule from '@/components/QuestionModule';
+import PillarIcon from '@/components/PillarIcon';
+import ProgressTracker from '@/components/ProgressTracker';
 import { useSimpleUser } from '@/context/SimpleUserContext';
 
-// Define questions for the Passion pillar
+// Define questions for the Passion pillar - reduced to 2 most relevant questions
 const passionQuestions = [
   {
     id: 'passion-1',
@@ -13,14 +15,6 @@ const passionQuestions = [
   {
     id: 'passion-2',
     text: "What would you do even if you weren't paid for it?",
-  },
-  {
-    id: 'passion-3',
-    text: 'What activities did you love as a child that you might still enjoy?',
-  },
-  {
-    id: 'passion-4',
-    text: 'What topics do you enjoy learning or reading about?',
   },
 ];
 
@@ -92,27 +86,27 @@ export default function PassionPillar() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-noto text-sakura mb-4">
-            Passion
-          </h1>
-          <p className="text-lg font-sawarabi text-sumi">
+      <div className="max-w-4xl mx-auto">
+        {/* Progress Tracker */}
+        <ProgressTracker userId={user?.id} />
+        
+        <div 
+          className="bg-white bg-opacity-80 shadow-lg rounded-lg p-8 mb-8"
+          style={{ 
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.5s ease-in-out'
+          }}
+        >
+          <div className="flex items-center justify-center mb-6">
+            <PillarIcon pillar="passion" size="lg" className="mr-4" />
+            <h1 className="text-3xl md:text-4xl font-noto text-sakura text-center">
+              Passion
+            </h1>
+          </div>
+          
+          <p className="text-lg font-sawarabi text-sumi mb-8 text-center">
             Discover what you love and what you're good at
           </p>
-        </div>
-        
-        <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 md:p-8 mb-8">
-          <div className="mb-6">
-            <h2 className="text-xl font-noto text-sakura mb-2">
-              What is Passion in Ikigai?
-            </h2>
-            <p className="font-sawarabi text-sumi">
-              In the Ikigai framework, passion emerges at the intersection of what you love and what you're good at. 
-              These are activities that bring you joy and where you naturally excel or have developed skills.
-              Identifying your passions is the first step toward finding your life purpose.
-            </p>
-          </div>
           
           <QuestionModule
             questions={passionQuestions}

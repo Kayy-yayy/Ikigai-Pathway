@@ -2,25 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import QuestionModule from '@/components/QuestionModule';
+import PillarIcon from '@/components/PillarIcon';
+import ProgressTracker from '@/components/ProgressTracker';
 import { useSimpleUser } from '@/context/SimpleUserContext';
 
-// Define questions for the Vocation pillar
+// Define questions for the Vocation pillar - reduced to 2 most relevant questions
 const vocationQuestions = [
   {
     id: 'vocation-1',
-    text: 'What skills or services would people be willing to pay you for?',
+    text: 'What skills or services do people value enough to pay you for?',
   },
   {
     id: 'vocation-2',
-    text: 'What careers align with your skills and interests?',
-  },
-  {
-    id: 'vocation-3',
-    text: 'What economic opportunities do you see in your field or community?',
-  },
-  {
-    id: 'vocation-4',
-    text: 'What work would provide you with financial stability while using your talents?',
+    text: 'What work would you do that aligns with your values and provides financial stability?',
   },
 ];
 
@@ -75,8 +69,8 @@ export default function VocationPillar() {
       }
     }
     
-    // Navigate to the ikigai chart page
-    router.push('/ikigai-chart');
+    // Navigate to the dashboard (or wherever is appropriate after completing all pillars)
+    router.push('/dashboard');
   };
 
   // If loading, show loading spinner
@@ -84,7 +78,7 @@ export default function VocationPillar() {
     return (
       <Layout>
         <div className="flex justify-center items-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
         </div>
       </Layout>
     );
@@ -92,32 +86,32 @@ export default function VocationPillar() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-noto text-indigo mb-4">
-            Vocation
-          </h1>
-          <p className="text-lg font-sawarabi text-sumi">
-            Discover what the world needs and what the world will pay for
-          </p>
-        </div>
+      <div className="max-w-4xl mx-auto">
+        {/* Progress Tracker */}
+        <ProgressTracker userId={user?.id} />
         
-        <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 md:p-8 mb-8">
-          <div className="mb-6">
-            <h2 className="text-xl font-noto text-indigo mb-2">
-              What is Vocation in Ikigai?
-            </h2>
-            <p className="font-sawarabi text-sumi">
-              In the Ikigai framework, vocation represents the intersection of what the world needs and what the world will pay for. 
-              These are the valuable services and solutions that address real problems in society.
-              Identifying your vocation helps you find work that is both sustainable and impactful.
-            </p>
+        <div 
+          className="bg-white bg-opacity-80 shadow-lg rounded-lg p-8 mb-8"
+          style={{ 
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.5s ease-in-out'
+          }}
+        >
+          <div className="flex items-center justify-center mb-6">
+            <PillarIcon pillar="vocation" size="lg" className="mr-4" />
+            <h1 className="text-3xl md:text-4xl font-noto text-gold text-center">
+              Vocation
+            </h1>
           </div>
+          
+          <p className="text-lg font-sawarabi text-sumi mb-8 text-center">
+            Discover how to align your skills with financial sustainability
+          </p>
           
           <QuestionModule
             questions={vocationQuestions}
             pillarName="vocation"
-            pillarColor="indigo"
+            pillarColor="gold"
             onComplete={handleComplete}
             userId={user?.id}
           />
